@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FEATURES, STATS, TINT_HEX, type Feature } from "@/lib/features";
+import { ALL_TOOLS } from "@/lib/tools";
 
 function hexToRgba(hex: string, alpha: number) {
   const value = hex.replace("#", "");
@@ -10,9 +11,16 @@ function hexToRgba(hex: string, alpha: number) {
 }
 
 export function StatChips() {
+  // Show the real tool count (rounded down to a tidy "N+") so the chip tracks
+  // the database, whether that's the curated 100 or the full harvested set.
+  const toolCount = Math.floor(ALL_TOOLS.length / 10) * 10;
+  const stats = STATS.map((stat) =>
+    stat.label === "Tools" ? { ...stat, value: `${toolCount}+` } : stat,
+  );
+
   return (
     <ul className="flex flex-wrap gap-2">
-      {STATS.map((stat) => (
+      {stats.map((stat) => (
         <li
           key={stat.label}
           className="flex min-w-[calc(50%-0.25rem)] flex-1 items-center justify-center gap-2 rounded-field border border-line/60 bg-surface px-3 py-3"

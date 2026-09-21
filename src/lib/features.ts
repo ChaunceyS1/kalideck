@@ -87,7 +87,7 @@ export const FEATURES: Feature[] = [
 ];
 
 export const STATS = [
-  { value: "600+", label: "Tools" },
+  { value: "100+", label: "Tools" },
   { value: "180+", label: "Videos" },
   { value: "10", label: "Phases" },
   { value: "AI", label: "Powered" },
