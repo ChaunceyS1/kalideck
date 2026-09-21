@@ -1,415 +1,85 @@
 [
   {
-    "slug": "nmap",
-    "name": "Nmap",
-    "category": "Information Gathering",
-    "short": "Maps which ports answer on a host and what software sits behind them.",
-    "long": "Nmap sends crafted probes to a target and reads the replies to build a picture of open ports, running services, and often the operating system. It is usually the first tool run against an in-scope host to decide where to look next.",
-    "apt": "nmap",
-    "tags": ["scanner", "ports", "recon", "network"],
-    "commands": [
-      { "label": "Service and version scan", "cmd": "nmap -sV {target}", "note": "Identifies the service and version string on each open port." },
-      { "label": "Full TCP port sweep", "cmd": "nmap -p- {target}", "note": "Checks all 65535 TCP ports instead of the default top 1000." },
-      { "label": "Default script scan", "cmd": "nmap -sC -sV {target}", "note": "Runs the safe default NSE scripts alongside version detection." },
-      { "label": "Single port check", "cmd": "nmap -p {port} {target}", "note": "Focus on one port when you already know what you are after." },
-      { "label": "OS and traceroute", "cmd": "nmap -A {target}", "note": "Aggressive mode: OS guess, versions, scripts, and route. Noisy." }
-    ]
-  },
-  {
-    "slug": "masscan",
-    "name": "Masscan",
-    "category": "Information Gathering",
-    "short": "Very fast port scanner for large address ranges.",
-    "long": "Masscan trades Nmap's depth for raw speed, sending packets asynchronously so a wide range of hosts can be swept quickly. It is handy for a first pass over a large scope, then Nmap follows up on whatever answers.",
-    "apt": "masscan",
-    "tags": ["scanner", "ports", "fast", "network"],
-    "commands": [
-      { "label": "Scan a port across a range", "cmd": "masscan {target}/24 -p{port} --rate 1000", "note": "Keep the rate modest so you do not overwhelm the network." },
-      { "label": "Common web ports", "cmd": "masscan {target} -p80,443,8080,8443", "note": "Quick check for web listeners before deeper scanning." },
-      { "label": "Save results to file", "cmd": "masscan {target}/24 -p1-65535 -oL out.txt", "note": "List output that other tools can parse later." }
-    ]
-  },
-  {
-    "slug": "dnsrecon",
-    "name": "DNSRecon",
-    "category": "Information Gathering",
-    "short": "Enumerates DNS records and probes for subdomains.",
-    "long": "DNSRecon pulls the records a domain publishes and tries several techniques to find hosts that are not obvious, including record enumeration and dictionary-based subdomain guessing. It is a quiet way to widen a scope before touching any host directly.",
-    "apt": "dnsrecon",
-    "tags": ["dns", "recon", "subdomains", "osint"],
-    "commands": [
-      { "label": "Standard record enumeration", "cmd": "dnsrecon -d {target}", "note": "Pulls A, MX, NS, SOA, and TXT records for the domain." },
-      { "label": "Subdomain brute force", "cmd": "dnsrecon -d {target} -D {wordlist} -t brt", "note": "Guesses hostnames from a wordlist against the domain." },
-      { "label": "Zone transfer attempt", "cmd": "dnsrecon -d {target} -t axfr", "note": "Checks whether a name server hands over its whole zone." }
-    ]
-  },
-  {
-    "slug": "theharvester",
-    "name": "theHarvester",
-    "category": "Information Gathering",
-    "short": "Collects emails, names, and hosts from public sources.",
-    "long": "theHarvester queries search engines and public data sets to gather email addresses, subdomains, and host names tied to a domain. It builds an early OSINT picture without sending traffic to the target itself.",
-    "apt": "theharvester",
-    "tags": ["osint", "email", "recon", "passive"],
-    "commands": [
-      { "label": "Search across engines", "cmd": "theHarvester -d {target} -b all", "note": "Queries every configured data source for the domain." },
-      { "label": "Limit to one source", "cmd": "theHarvester -d {target} -b bing -l 200", "note": "Caps results and uses a single engine for a faster run." }
-    ]
-  },
-  {
-    "slug": "whatweb",
-    "name": "WhatWeb",
-    "category": "Information Gathering",
-    "short": "Fingerprints the technology stack behind a website.",
-    "long": "WhatWeb inspects a site's responses to name the server, framework, CMS, analytics, and other components in use. Knowing the stack early points the rest of an assessment at the right weaknesses.",
-    "apt": "whatweb",
-    "tags": ["web", "fingerprint", "recon", "cms"],
-    "commands": [
-      { "label": "Identify a site", "cmd": "whatweb {url}", "note": "Prints the detected technologies for the URL." },
-      { "label": "Aggressive detection", "cmd": "whatweb -a 3 {url}", "note": "Higher aggression level probes more but sends more requests." }
-    ]
-  },
-  {
-    "slug": "nikto",
-    "name": "Nikto",
-    "category": "Vulnerability Analysis",
-    "short": "Scans web servers for known issues and risky files.",
-    "long": "Nikto checks a web server against a large list of known-problem files, outdated components, and common misconfigurations. It is loud by design and best pointed only at hosts you are authorized to test.",
-    "apt": "nikto",
-    "tags": ["web", "scanner", "vulnerability", "audit"],
-    "commands": [
-      { "label": "Scan a host", "cmd": "nikto -h {url}", "note": "Runs the full check set against the target URL." },
-      { "label": "Scan a specific port", "cmd": "nikto -h {target} -p {port}", "note": "Point Nikto at a non-standard web port." },
-      { "label": "Save an HTML report", "cmd": "nikto -h {url} -o report.html -Format html", "note": "Writes findings to a shareable report file." }
-    ]
-  },
-  {
-    "slug": "nuclei",
-    "name": "Nuclei",
-    "category": "Vulnerability Analysis",
-    "short": "Template-driven scanner for known vulnerabilities and exposures.",
-    "long": "Nuclei runs a community library of YAML templates against a target, each describing how to detect one specific issue. Because checks are just templates, coverage stays current and false positives are easy to audit.",
-    "apt": "nuclei",
-    "tags": ["scanner", "templates", "vulnerability", "web"],
-    "commands": [
-      { "label": "Scan with all templates", "cmd": "nuclei -u {url}", "note": "Runs the default template set against one target." },
-      { "label": "Only critical findings", "cmd": "nuclei -u {url} -severity critical,high", "note": "Filters to the templates that matter most first." },
-      { "label": "Update templates", "cmd": "nuclei -update-templates", "note": "Pulls the latest community templates before a scan." }
-    ]
-  },
-  {
-    "slug": "wpscan",
-    "name": "WPScan",
-    "category": "Vulnerability Analysis",
-    "short": "WordPress-focused scanner for plugins, themes, and users.",
-    "long": "WPScan knows WordPress well: it enumerates the version, installed plugins and themes, and user accounts, then flags versions with published vulnerabilities. It is the go-to first look at any WordPress site in scope.",
-    "apt": "wpscan",
-    "tags": ["wordpress", "web", "cms", "scanner"],
-    "commands": [
-      { "label": "Scan a site", "cmd": "wpscan --url {url}", "note": "Baseline scan of version, plugins, and themes." },
-      { "label": "Enumerate users", "cmd": "wpscan --url {url} --enumerate u", "note": "Lists valid usernames for later testing." },
-      { "label": "Enumerate vulnerable plugins", "cmd": "wpscan --url {url} --enumerate vp", "note": "Focuses on plugins with known issues." }
-    ]
-  },
-  {
-    "slug": "sqlmap",
-    "name": "sqlmap",
-    "category": "Web Apps",
-    "short": "Automates finding and confirming SQL injection points.",
-    "long": "sqlmap takes a request and methodically tests its parameters for SQL injection, then, once a point is confirmed, can enumerate the database structure. It is powerful and intrusive, so it belongs only on targets you are scoped to test.",
-    "apt": "sqlmap",
-    "tags": ["web", "sql-injection", "database", "audit"],
-    "commands": [
-      { "label": "Test a URL parameter", "cmd": "sqlmap -u \"{url}?id=1\" --batch", "note": "Batch mode accepts default prompts for an unattended run." },
-      { "label": "List databases", "cmd": "sqlmap -u \"{url}?id=1\" --dbs", "note": "Enumerates database names once injection is confirmed." },
-      { "label": "Test data from a saved request", "cmd": "sqlmap -r request.txt --batch", "note": "Reads a full HTTP request captured from a proxy." }
-    ]
-  },
-  {
-    "slug": "gobuster",
-    "name": "Gobuster",
-    "category": "Web Apps",
-    "short": "Brute-forces directories, files, and DNS names from a wordlist.",
-    "long": "Gobuster requests many paths or names from a wordlist and reports which ones exist based on the responses. It is a fast way to find unlinked content and hidden endpoints on a web server.",
-    "apt": "gobuster",
-    "tags": ["web", "brute-force", "directories", "content-discovery"],
-    "commands": [
-      { "label": "Directory discovery", "cmd": "gobuster dir -u {url} -w {wordlist}", "note": "Walks the wordlist looking for live paths." },
-      { "label": "Filter by extension", "cmd": "gobuster dir -u {url} -w {wordlist} -x php,txt,bak", "note": "Appends extensions to each word to catch files." },
-      { "label": "Subdomain discovery", "cmd": "gobuster dns -d {target} -w {wordlist}", "note": "Guesses subdomains against the base domain." }
-    ]
-  },
-  {
-    "slug": "ffuf",
-    "name": "ffuf",
-    "category": "Web Apps",
-    "short": "Fast web fuzzer for paths, parameters, and virtual hosts.",
-    "long": "ffuf replaces a FUZZ marker in a request with each entry from a wordlist and sorts the responses, making it flexible for content discovery, parameter mining, and virtual host hunting. Filters on status, size, or word count keep the output readable.",
-    "apt": "ffuf",
-    "tags": ["web", "fuzzer", "content-discovery", "fast"],
-    "commands": [
-      { "label": "Directory fuzzing", "cmd": "ffuf -u {url}/FUZZ -w {wordlist}", "note": "The FUZZ keyword marks where each word is substituted." },
-      { "label": "Hide 404 responses", "cmd": "ffuf -u {url}/FUZZ -w {wordlist} -fc 404", "note": "Filters out not-found responses to cut noise." },
-      { "label": "Virtual host discovery", "cmd": "ffuf -u {url} -H \"Host: FUZZ.{target}\" -w {wordlist}", "note": "Fuzzes the Host header to find name-based vhosts." }
-    ]
-  },
-  {
-    "slug": "wfuzz",
-    "name": "Wfuzz",
-    "category": "Web Apps",
-    "short": "Fuzzes web requests to find hidden inputs and content.",
-    "long": "Wfuzz substitutes payloads into any part of a request and reports how the server responds, which suits discovering parameters, brute-forcing forms, and probing for injection. Response filters trim results down to the interesting cases.",
-    "apt": "wfuzz",
-    "tags": ["web", "fuzzer", "parameters", "brute-force"],
-    "commands": [
-      { "label": "Directory fuzzing", "cmd": "wfuzz -w {wordlist} --hc 404 {url}/FUZZ", "note": "Hides 404 responses while walking the wordlist." },
-      { "label": "POST parameter fuzzing", "cmd": "wfuzz -w {wordlist} -d \"user=admin&pass=FUZZ\" {url}/login", "note": "Injects each word into a form field." }
-    ]
-  },
-  {
-    "slug": "burpsuite",
-    "name": "Burp Suite",
-    "category": "Web Apps",
-    "short": "Intercepting proxy and toolkit for web application testing.",
-    "long": "Burp Suite sits between the browser and the target so requests can be viewed, edited, and replayed. Its proxy, repeater, and intruder tools make it the central workspace for hands-on web testing.",
-    "apt": "burpsuite",
-    "tags": ["web", "proxy", "interception", "testing"],
-    "commands": [
-      { "label": "Launch Burp", "cmd": "burpsuite", "note": "Opens the GUI; set the browser proxy to 127.0.0.1:8080." },
-      { "label": "Set browser proxy", "cmd": "curl -x 127.0.0.1:8080 -k {url}", "note": "Routes a single request through Burp for inspection." }
-    ]
-  },
-  {
-    "slug": "hydra",
-    "name": "Hydra",
-    "category": "Password Attacks",
-    "short": "Tests login credentials across many network protocols.",
-    "long": "Hydra tries username and password combinations against network services such as SSH, FTP, and web forms to find weak credentials. It is strictly for systems you own or are authorized to test, since it generates many failed login attempts.",
-    "apt": "hydra",
-    "tags": ["brute-force", "credentials", "login", "network"],
-    "commands": [
-      { "label": "SSH password test", "cmd": "hydra -l admin -P {wordlist} ssh://{target}", "note": "Tries each password in the list for the admin user." },
-      { "label": "FTP with user list", "cmd": "hydra -L users.txt -P {wordlist} ftp://{target}", "note": "Iterates over both a user list and a password list." },
-      { "label": "HTTP POST form", "cmd": "hydra -l admin -P {wordlist} {target} http-post-form \"/login:user=^USER^&pass=^PASS^:Invalid\"", "note": "The failure string tells Hydra which attempts were wrong." }
-    ]
-  },
-  {
-    "slug": "john",
-    "name": "John the Ripper",
-    "category": "Password Attacks",
-    "short": "Recovers passwords from captured hashes offline.",
-    "long": "John the Ripper takes hashes you have lawfully obtained and works to recover the original passwords using wordlists and rule-based mutations. It runs offline against the hash file, so it never touches the source system.",
-    "apt": "john",
-    "tags": ["hashes", "cracking", "offline", "credentials"],
-    "commands": [
-      { "label": "Wordlist mode", "cmd": "john --wordlist={wordlist} hashes.txt", "note": "Tries each word, applying any configured rules." },
-      { "label": "Show cracked results", "cmd": "john --show hashes.txt", "note": "Prints passwords John has already recovered." },
-      { "label": "Prepare a zip hash", "cmd": "zip2john file.zip > zip.hash", "note": "Extracts a crackable hash from a protected archive." }
-    ]
-  },
-  {
-    "slug": "hashcat",
-    "name": "Hashcat",
-    "category": "Password Attacks",
-    "short": "GPU-accelerated hash recovery with flexible attack modes.",
-    "long": "Hashcat uses the GPU to test candidate passwords against captured hashes at high speed, supporting many hash types and attack strategies from straight wordlists to masks. As with any cracker, it is for hashes you are permitted to work on.",
-    "apt": "hashcat",
-    "tags": ["hashes", "cracking", "gpu", "offline"],
-    "commands": [
-      { "label": "Wordlist attack", "cmd": "hashcat -m 0 hashes.txt {wordlist}", "note": "Mode 0 is raw MD5; pick the -m value for your hash type." },
-      { "label": "Wordlist plus rules", "cmd": "hashcat -m 0 hashes.txt {wordlist} -r rules/best64.rule", "note": "Applies mutation rules to each candidate word." },
-      { "label": "Mask attack", "cmd": "hashcat -m 0 -a 3 hashes.txt ?u?l?l?l?d?d", "note": "Brute forces a known password pattern with a mask." }
-    ]
-  },
-  {
-    "slug": "crunch",
-    "name": "Crunch",
-    "category": "Password Attacks",
-    "short": "Generates custom wordlists from patterns and character sets.",
-    "long": "Crunch builds wordlists to a specification: a length range, a character set, or a pattern, writing candidates to a file or straight into another tool. It is useful when a target has a known password format worth modelling.",
-    "apt": "crunch",
-    "tags": ["wordlist", "generation", "brute-force"],
-    "commands": [
-      { "label": "Fixed length list", "cmd": "crunch 8 8 -o {wordlist}", "note": "Every eight-character combination of the default set." },
-      { "label": "Custom character set", "cmd": "crunch 6 6 abcABC123 -o {wordlist}", "note": "Limits candidates to the characters you provide." },
-      { "label": "Pattern based", "cmd": "crunch 8 8 -t pass@@@@ -o {wordlist}", "note": "The @ marks positions that vary while the rest stays fixed." }
-    ]
-  },
-  {
     "slug": "aircrack-ng",
     "name": "Aircrack-ng",
     "category": "Wireless",
     "short": "Suite for capturing and testing Wi-Fi network security.",
     "long": "Aircrack-ng is a set of tools for monitoring wireless traffic, capturing handshakes, and testing the strength of a network's key against a wordlist. Use it only on networks you own or have written permission to assess.",
     "apt": "aircrack-ng",
-    "tags": ["wireless", "wifi", "capture", "audit"],
+    "tags": [
+      "wireless",
+      "wifi",
+      "capture",
+      "audit"
+    ],
     "commands": [
-      { "label": "Enable monitor mode", "cmd": "airmon-ng start {interface}", "note": "Puts the adapter into monitor mode for capture." },
-      { "label": "Capture nearby traffic", "cmd": "airodump-ng {interface}mon", "note": "Lists networks and clients in range." },
-      { "label": "Test a captured handshake", "cmd": "aircrack-ng capture.cap -w {wordlist}", "note": "Checks the wordlist against the captured handshake offline." }
+      {
+        "label": "Enable monitor mode",
+        "cmd": "airmon-ng start {interface}",
+        "note": "Puts the adapter into monitor mode for capture."
+      },
+      {
+        "label": "Capture nearby traffic",
+        "cmd": "airodump-ng {interface}mon",
+        "note": "Lists networks and clients in range."
+      },
+      {
+        "label": "Test a captured handshake",
+        "cmd": "aircrack-ng capture.cap -w {wordlist}",
+        "note": "Checks the wordlist against the captured handshake offline."
+      }
     ]
   },
   {
-    "slug": "wifite",
-    "name": "Wifite",
-    "category": "Wireless",
-    "short": "Automates common wireless auditing steps.",
-    "long": "Wifite wraps the wireless toolset into a guided workflow, scanning for networks and running the appropriate capture steps against the ones you select. It lowers the number of manual commands for authorized wireless assessments.",
-    "apt": "wifite",
-    "tags": ["wireless", "wifi", "automation", "audit"],
+    "slug": "amass",
+    "name": "Amass",
+    "category": "Information Gathering",
+    "short": "Maps a domain's attack surface through deep subdomain discovery.",
+    "long": "Amass combines many passive data sources with active resolution to build a thorough map of a domain's subdomains and related infrastructure. It is a go-to for scoping the full footprint of a target before any host is touched.",
+    "apt": "amass",
+    "tags": [
+      "dns",
+      "subdomains",
+      "osint",
+      "recon"
+    ],
     "commands": [
-      { "label": "Start Wifite", "cmd": "wifite", "note": "Scans and presents nearby networks to choose from." },
-      { "label": "Target one interface", "cmd": "wifite -i {interface}", "note": "Pins the run to a specific adapter." }
+      {
+        "label": "Passive enumeration",
+        "cmd": "amass enum -passive -d {target}",
+        "note": "Pulls subdomains from public sources with no traffic to the target."
+      },
+      {
+        "label": "Active enumeration",
+        "cmd": "amass enum -active -d {target}",
+        "note": "Resolves names and probes for more hosts; noisier than passive."
+      },
+      {
+        "label": "Show the graph",
+        "cmd": "amass db -d {target} -show",
+        "note": "Prints findings already stored from earlier runs."
+      }
     ]
   },
   {
-    "slug": "kismet",
-    "name": "Kismet",
-    "category": "Wireless",
-    "short": "Wireless network detector and traffic monitor.",
-    "long": "Kismet passively listens for wireless networks and devices, logging what it sees without transmitting. It is well suited to surveying the wireless landscape of an authorized site and spotting rogue access points.",
-    "apt": "kismet",
-    "tags": ["wireless", "monitor", "detection", "passive"],
-    "commands": [
-      { "label": "Start with an interface", "cmd": "kismet -c {interface}", "note": "Begins passive capture on the given adapter." },
-      { "label": "Open the web UI", "cmd": "kismet", "note": "Runs Kismet; browse to the local web interface it prints." }
-    ]
-  },
-  {
-    "slug": "metasploit",
-    "name": "Metasploit Framework",
+    "slug": "armitage",
+    "name": "Armitage",
     "category": "Exploitation",
-    "short": "Framework for developing and running exploit modules.",
-    "long": "The Metasploit Framework organizes exploits, payloads, and auxiliary modules behind a common console, so a confirmed weakness can be tested in a controlled way. It is a core tool for validating findings during authorized engagements.",
-    "apt": "metasploit-framework",
-    "tags": ["framework", "exploit", "payloads", "console"],
+    "short": "Graphical team front end for Metasploit.",
+    "long": "Armitage puts a visual interface over the Metasploit Framework, showing hosts, sessions, and modules so a team can coordinate an authorized test. It makes the framework's workflow easier to follow at a glance.",
+    "apt": "armitage",
+    "tags": [
+      "metasploit",
+      "gui",
+      "framework",
+      "collaboration"
+    ],
     "commands": [
-      { "label": "Launch the console", "cmd": "msfconsole", "note": "Opens the interactive Metasploit prompt." },
-      { "label": "Search modules", "cmd": "msfconsole -q -x \"search {target}; exit\"", "note": "Quiet mode runs a search and exits." },
-      { "label": "Update the framework", "cmd": "msfupdate", "note": "Pulls the latest modules and fixes." }
-    ]
-  },
-  {
-    "slug": "searchsploit",
-    "name": "SearchSploit",
-    "category": "Exploitation",
-    "short": "Searches the local Exploit-DB archive from the terminal.",
-    "long": "SearchSploit queries an offline copy of the Exploit-DB archive so you can find proof-of-concept code for a known product and version without going online. It is a quick way to check whether a discovered version has public exploits.",
-    "apt": "exploitdb",
-    "tags": ["exploit-db", "search", "research", "offline"],
-    "commands": [
-      { "label": "Search by product", "cmd": "searchsploit {target}", "note": "Lists archive entries matching the term." },
-      { "label": "Copy an exploit locally", "cmd": "searchsploit -m 12345", "note": "Mirrors the entry by its ID into the current directory." },
-      { "label": "Update the archive", "cmd": "searchsploit -u", "note": "Refreshes the local Exploit-DB copy." }
-    ]
-  },
-  {
-    "slug": "netcat",
-    "name": "Netcat",
-    "category": "Exploitation",
-    "short": "Reads and writes raw TCP and UDP connections.",
-    "long": "Netcat is a small utility that opens, listens on, and pipes data across network connections, which makes it handy for banner grabbing, quick file transfers, and testing whether a port behaves as expected. It is a staple of both offense and troubleshooting.",
-    "apt": "netcat-traditional",
-    "tags": ["network", "tcp", "listener", "utility"],
-    "commands": [
-      { "label": "Connect to a port", "cmd": "nc {target} {port}", "note": "Opens an interactive connection to the service." },
-      { "label": "Grab a banner", "cmd": "nc -v {target} {port}", "note": "Verbose connect that prints the greeting a service sends." },
-      { "label": "Listen on a port", "cmd": "nc -lvnp {port}", "note": "Waits for an inbound connection on the given port." }
-    ]
-  },
-  {
-    "slug": "wireshark",
-    "name": "Wireshark",
-    "category": "Sniffing & Spoofing",
-    "short": "Graphical analyzer for captured network traffic.",
-    "long": "Wireshark captures packets and presents them with deep protocol decoding, so you can follow conversations, inspect fields, and understand exactly what crossed the wire. It is the reference tool for making sense of network behavior.",
-    "apt": "wireshark",
-    "tags": ["packets", "analysis", "capture", "protocols"],
-    "commands": [
-      { "label": "Launch Wireshark", "cmd": "wireshark", "note": "Opens the GUI to pick an interface and start capturing." },
-      { "label": "Capture on an interface", "cmd": "wireshark -i {interface} -k", "note": "Starts capturing immediately on the chosen adapter." },
-      { "label": "Open a saved capture", "cmd": "wireshark capture.pcap", "note": "Loads a previously recorded packet file for analysis." }
-    ]
-  },
-  {
-    "slug": "tcpdump",
-    "name": "tcpdump",
-    "category": "Sniffing & Spoofing",
-    "short": "Command-line packet capture with expressive filters.",
-    "long": "tcpdump records network traffic from the terminal and applies filter expressions to keep only the packets you care about. It is ideal on servers without a GUI and for quick captures you hand to Wireshark later.",
-    "apt": "tcpdump",
-    "tags": ["packets", "capture", "cli", "filters"],
-    "commands": [
-      { "label": "Capture on an interface", "cmd": "tcpdump -i {interface}", "note": "Prints packets as they arrive on the adapter." },
-      { "label": "Filter by host and port", "cmd": "tcpdump -i {interface} host {target} and port {port}", "note": "Keeps only traffic to or from that host and port." },
-      { "label": "Write to a file", "cmd": "tcpdump -i {interface} -w capture.pcap", "note": "Saves raw packets for later analysis in Wireshark." }
-    ]
-  },
-  {
-    "slug": "ettercap",
-    "name": "Ettercap",
-    "category": "Sniffing & Spoofing",
-    "short": "Toolkit for on-path attacks on a local network.",
-    "long": "Ettercap can position itself between hosts on a switched LAN to observe and manipulate traffic, which is used in authorized tests to demonstrate the risk of unencrypted protocols. It should never be run on a network you do not control.",
-    "apt": "ettercap-graphical",
-    "tags": ["mitm", "network", "sniffing", "lan"],
-    "commands": [
-      { "label": "Launch the GUI", "cmd": "ettercap -G", "note": "Opens the graphical interface for guided setup." },
-      { "label": "Text mode on an interface", "cmd": "ettercap -T -i {interface}", "note": "Runs in the terminal on the chosen adapter." }
-    ]
-  },
-  {
-    "slug": "responder",
-    "name": "Responder",
-    "category": "Sniffing & Spoofing",
-    "short": "Answers name-resolution requests to capture credentials in a lab.",
-    "long": "Responder listens for broadcast name-resolution queries on a Windows network and answers them, which in an authorized test can surface hashes that show how spoofing risk plays out. It is a lab and engagement tool, not something to run on shared networks.",
-    "apt": "responder",
-    "tags": ["network", "windows", "spoofing", "credentials"],
-    "commands": [
-      { "label": "Listen on an interface", "cmd": "responder -I {interface}", "note": "Starts answering name-resolution queries on the adapter." },
-      { "label": "Analyze without answering", "cmd": "responder -I {interface} -A", "note": "Passive mode observes queries without responding." }
-    ]
-  },
-  {
-    "slug": "enum4linux",
-    "name": "enum4linux",
-    "category": "Post Exploitation",
-    "short": "Enumerates information from Windows and Samba services.",
-    "long": "enum4linux queries SMB and related services to list shares, users, groups, and policy details a host exposes. It gathers the context that guides the next steps once you have network access to a target.",
-    "apt": "enum4linux",
-    "tags": ["smb", "windows", "enumeration", "samba"],
-    "commands": [
-      { "label": "Full enumeration", "cmd": "enum4linux -a {target}", "note": "Runs every check the tool supports against the host." },
-      { "label": "List shares", "cmd": "enum4linux -S {target}", "note": "Focuses on the shared folders the host offers." },
-      { "label": "List users", "cmd": "enum4linux -U {target}", "note": "Pulls the user accounts visible over SMB." }
-    ]
-  },
-  {
-    "slug": "smbclient",
-    "name": "smbclient",
-    "category": "Post Exploitation",
-    "short": "Command-line client for browsing SMB shares.",
-    "long": "smbclient connects to Windows and Samba file shares from the terminal to list contents and transfer files. During a test it confirms what a share actually exposes once credentials or anonymous access are available.",
-    "apt": "smbclient",
-    "tags": ["smb", "shares", "files", "windows"],
-    "commands": [
-      { "label": "List shares", "cmd": "smbclient -L {target}", "note": "Shows the shares a host advertises." },
-      { "label": "Connect to a share", "cmd": "smbclient //{target}/share", "note": "Opens an interactive session on the named share." },
-      { "label": "Anonymous listing", "cmd": "smbclient -L {target} -N", "note": "Tries listing without supplying a password." }
-    ]
-  },
-  {
-    "slug": "linpeas",
-    "name": "LinPEAS",
-    "category": "Post Exploitation",
-    "short": "Surveys a Linux host for privilege-escalation openings.",
-    "long": "LinPEAS runs a broad set of local checks on a Linux system and highlights misconfigurations, weak permissions, and other findings that could allow a low-privilege user to gain more access. It is used on hosts where you already have authorized access to assess hardening.",
-    "apt": "peass",
-    "tags": ["privesc", "linux", "enumeration", "local"],
-    "commands": [
-      { "label": "Run the survey", "cmd": "./linpeas.sh", "note": "Executes all local checks and colors the noteworthy results." },
-      { "label": "Save the output", "cmd": "./linpeas.sh | tee linpeas.txt", "note": "Keeps a copy of the findings for the report." }
+      {
+        "label": "Launch Armitage",
+        "cmd": "armitage",
+        "note": "Opens the GUI; connect it to a running Metasploit RPC."
+      }
     ]
   },
   {
@@ -419,9 +89,65 @@
     "short": "Graphical platform for digital forensic investigations.",
     "long": "Autopsy provides a case-based interface over disk images, recovering files, timelines, and artifacts for investigation. It suits incident response and forensic review where findings must stay organized and documented.",
     "apt": "autopsy",
-    "tags": ["forensics", "disk", "investigation", "timeline"],
+    "tags": [
+      "forensics",
+      "disk",
+      "investigation",
+      "timeline"
+    ],
     "commands": [
-      { "label": "Launch Autopsy", "cmd": "autopsy", "note": "Starts the platform and prints the local URL to open." }
+      {
+        "label": "Launch Autopsy",
+        "cmd": "autopsy",
+        "note": "Starts the platform and prints the local URL to open."
+      }
+    ]
+  },
+  {
+    "slug": "beef-xss",
+    "name": "BeEF",
+    "category": "Exploitation",
+    "short": "Browser exploitation framework for authorized tests.",
+    "long": "BeEF demonstrates the impact of a hooked browser in a controlled test, showing what an attacker could do once a client runs their content. It is a lab and engagement tool used within an agreed scope.",
+    "apt": "beef-xss",
+    "tags": [
+      "browser",
+      "framework",
+      "exploit",
+      "web"
+    ],
+    "commands": [
+      {
+        "label": "Start BeEF",
+        "cmd": "beef-xss",
+        "note": "Launches the server and prints the control-panel URL."
+      }
+    ]
+  },
+  {
+    "slug": "bettercap",
+    "name": "Bettercap",
+    "category": "Sniffing & Spoofing",
+    "short": "Modular toolkit for network and wireless monitoring.",
+    "long": "Bettercap offers a scriptable framework for observing and interacting with network traffic across Ethernet, Wi-Fi, and Bluetooth in authorized tests. Its module system makes it a flexible successor to older on-path tools.",
+    "apt": "bettercap",
+    "tags": [
+      "network",
+      "mitm",
+      "wireless",
+      "monitor"
+    ],
+    "commands": [
+      {
+        "label": "Start on an interface",
+        "cmd": "bettercap -iface {interface}",
+        "note": "Opens the interactive session on the chosen adapter."
+      },
+      {
+        "label": "Run the web UI",
+        "cmd": "bettercap -iface {interface} -caplet http-ui",
+        "note": "Serves the browser interface for guided use."
+      }
     ]
   },
   {
@@ -431,61 +157,117 @@
     "short": "Finds and extracts data embedded inside binary files.",
     "long": "Binwalk scans a firmware image or binary for known signatures, revealing embedded file systems, compressed blobs, and other structures, and can carve them out for closer inspection. It is central to firmware and file analysis.",
     "apt": "binwalk",
-    "tags": ["forensics", "firmware", "extraction", "binary"],
+    "tags": [
+      "forensics",
+      "firmware",
+      "extraction",
+      "binary"
+    ],
     "commands": [
-      { "label": "Scan for signatures", "cmd": "binwalk firmware.bin", "note": "Lists the structures it recognizes inside the file." },
-      { "label": "Extract embedded data", "cmd": "binwalk -e firmware.bin", "note": "Carves out the recognized parts into a folder." }
+      {
+        "label": "Scan for signatures",
+        "cmd": "binwalk firmware.bin",
+        "note": "Lists the structures it recognizes inside the file."
+      },
+      {
+        "label": "Extract embedded data",
+        "cmd": "binwalk -e firmware.bin",
+        "note": "Carves out the recognized parts into a folder."
+      }
     ]
   },
   {
-    "slug": "foremost",
-    "name": "Foremost",
+    "slug": "bloodhound",
+    "name": "BloodHound",
+    "category": "Post Exploitation",
+    "short": "Maps Active Directory relationships and attack paths.",
+    "long": "BloodHound ingests data collected from an Active Directory environment and graphs the relationships, surfacing paths that could lead from a low-privilege account to high-value targets. It is a mainstay of authorized internal assessments and of defensive review.",
+    "apt": "bloodhound",
+    "tags": [
+      "active-directory",
+      "windows",
+      "graph",
+      "analysis"
+    ],
+    "commands": [
+      {
+        "label": "Launch BloodHound",
+        "cmd": "bloodhound",
+        "note": "Opens the interface to load collected data."
+      },
+      {
+        "label": "Start the database",
+        "cmd": "neo4j console",
+        "note": "Runs the graph database BloodHound reads from."
+      }
+    ]
+  },
+  {
+    "slug": "bulk-extractor",
+    "name": "bulk_extractor",
     "category": "Forensics",
-    "short": "Recovers files from disk images by their signatures.",
-    "long": "Foremost carves files out of a disk image or raw device based on header and footer signatures, recovering data even when the file system is damaged. It is a staple of forensic recovery and data-carving work.",
-    "apt": "foremost",
-    "tags": ["forensics", "recovery", "carving", "disk"],
+    "short": "Scans images for emails, numbers, and other features.",
+    "long": "bulk_extractor sweeps a disk image for useful features such as email addresses, URLs, and card-shaped numbers without parsing the file system, which makes it fast and resilient to damage. It gives investigators quick leads from raw data.",
+    "apt": "bulk-extractor",
+    "tags": [
+      "forensics",
+      "extraction",
+      "disk",
+      "analysis"
+    ],
     "commands": [
-      { "label": "Carve from an image", "cmd": "foremost -i image.dd -o output/", "note": "Recovers files into the output directory." },
-      { "label": "Target specific types", "cmd": "foremost -t jpg,pdf -i image.dd -o output/", "note": "Limits recovery to the listed file types." }
+      {
+        "label": "Scan an image",
+        "cmd": "bulk_extractor -o output/ image.dd",
+        "note": "Writes feature files into the output directory."
+      }
     ]
   },
   {
-    "slug": "exiftool",
-    "name": "ExifTool",
-    "category": "Forensics",
-    "short": "Reads and edits metadata inside files.",
-    "long": "ExifTool reports the metadata embedded in images, documents, and many other formats, which often reveals device details, timestamps, and locations useful in an investigation. It can also strip that metadata when needed.",
-    "apt": "libimage-exiftool-perl",
-    "tags": ["forensics", "metadata", "images", "osint"],
+    "slug": "bully",
+    "name": "Bully",
+    "category": "Wireless",
+    "short": "Alternative WPS testing implementation.",
+    "long": "Bully is a rewritten WPS assessment tool that handles some routers and conditions better than the classic approach. As with all wireless testing, it is strictly for networks you are permitted to evaluate.",
+    "apt": "bully",
+    "tags": [
+      "wireless",
+      "wps",
+      "wifi",
+      "audit"
+    ],
     "commands": [
-      { "label": "Read all metadata", "cmd": "exiftool file.jpg", "note": "Prints every metadata field the file carries." },
-      { "label": "Strip all metadata", "cmd": "exiftool -all= file.jpg", "note": "Removes metadata, keeping a backup by default." }
+      {
+        "label": "Run against an AP",
+        "cmd": "bully {interface}mon -b AA:BB:CC:DD:EE:FF",
+        "note": "Point it at the BSSID of your authorized access point."
+      }
     ]
   },
   {
-    "slug": "faraday",
-    "name": "Faraday",
-    "category": "Reporting",
-    "short": "Collaborative workspace for organizing assessment findings.",
-    "long": "Faraday collects the output of many tools into a shared workspace so a team can track hosts, services, and vulnerabilities in one place and produce reports from them. It keeps the results of an engagement organized end to end.",
-    "apt": "faraday",
-    "tags": ["reporting", "collaboration", "workspace", "findings"],
+    "slug": "burpsuite",
+    "name": "Burp Suite",
+    "category": "Web Apps",
+    "short": "Intercepting proxy and toolkit for web application testing.",
+    "long": "Burp Suite sits between the browser and the target so requests can be viewed, edited, and replayed. Its proxy, repeater, and intruder tools make it the central workspace for hands-on web testing.",
+    "apt": "burpsuite",
+    "tags": [
+      "web",
+      "proxy",
+      "interception",
+      "testing"
+    ],
     "commands": [
-      { "label": "Start the server", "cmd": "faraday-server", "note": "Launches the Faraday backend and web interface." },
-      { "label": "Open the client", "cmd": "faraday-client", "note": "Connects to a running Faraday workspace." }
-    ]
-  },
-  {
-    "slug": "dradis",
-    "name": "Dradis",
-    "category": "Reporting",
-    "short": "Aggregates findings and generates assessment reports.",
-    "long": "Dradis centralizes notes, tool output, and findings so a team can collaborate and export consistent reports at the end of an engagement. It focuses on the write-up stage rather than the testing itself.",
-    "apt": "dradis",
-    "tags": ["reporting", "collaboration", "documentation", "export"],
-    "commands": [
-      { "label": "Start Dradis", "cmd": "service dradis start", "note": "Runs the Dradis service; open the local web interface." }
+      {
+        "label": "Launch Burp",
+        "cmd": "burpsuite",
+        "note": "Opens the GUI; set the browser proxy to 127.0.0.1:8080."
+      },
+      {
+        "label": "Set browser proxy",
+        "cmd": "curl -x 127.0.0.1:8080 -k {url}",
+        "note": "Routes a single request through Burp for inspection."
+      }
     ]
   },
   {
@@ -495,10 +277,193 @@
     "short": "Builds a wordlist by crawling a target website.",
     "long": "CeWL spiders a site and collects the words it finds to produce a custom wordlist that reflects the target's own vocabulary. Such lists often outperform generic ones when testing credentials tied to an organization.",
     "apt": "cewl",
-    "tags": ["wordlist", "web", "crawler", "custom"],
+    "tags": [
+      "wordlist",
+      "web",
+      "crawler",
+      "custom"
+    ],
     "commands": [
-      { "label": "Crawl and build a list", "cmd": "cewl {url} -w {wordlist}", "note": "Writes the collected words to the output file." },
-      { "label": "Set minimum word length", "cmd": "cewl {url} -m 6 -w {wordlist}", "note": "Keeps only words of at least the given length." }
+      {
+        "label": "Crawl and build a list",
+        "cmd": "cewl {url} -w {wordlist}",
+        "note": "Writes the collected words to the output file."
+      },
+      {
+        "label": "Set minimum word length",
+        "cmd": "cewl {url} -m 6 -w {wordlist}",
+        "note": "Keeps only words of at least the given length."
+      }
+    ]
+  },
+  {
+    "slug": "cherrytree",
+    "name": "CherryTree",
+    "category": "Reporting",
+    "short": "Hierarchical notebook for organizing engagement notes.",
+    "long": "CherryTree stores notes in a searchable tree with rich text and code blocks, which suits keeping the running log of an assessment tidy and easy to revisit. Good notes make the final report far quicker to write.",
+    "apt": "cherrytree",
+    "tags": [
+      "reporting",
+      "notes",
+      "documentation",
+      "organization"
+    ],
+    "commands": [
+      {
+        "label": "Open CherryTree",
+        "cmd": "cherrytree",
+        "note": "Launches the notebook for capturing findings as you go."
+      }
+    ]
+  },
+  {
+    "slug": "commix",
+    "name": "Commix",
+    "category": "Web Apps",
+    "short": "Automates finding and confirming command injection.",
+    "long": "Commix tests web parameters for operating-system command injection and, once a point is confirmed, helps demonstrate the impact in a controlled way. It is intrusive, so it belongs only on targets within an authorized scope.",
+    "apt": "commix",
+    "tags": [
+      "web",
+      "command-injection",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Test a URL",
+        "cmd": "commix --url=\"{url}?id=1\"",
+        "note": "Probes the parameter for command-injection points."
+      },
+      {
+        "label": "Test from a saved request",
+        "cmd": "commix -r request.txt",
+        "note": "Reads a full HTTP request captured from a proxy."
+      }
+    ]
+  },
+  {
+    "slug": "cowpatty",
+    "name": "coWPAtty",
+    "category": "Wireless",
+    "short": "Tests captured WPA handshakes against a wordlist.",
+    "long": "coWPAtty checks a captured WPA handshake against a wordlist offline, and can use precomputed tables to speed repeated tests. It runs entirely on the capture file, so it never touches the network again.",
+    "apt": "cowpatty",
+    "tags": [
+      "wireless",
+      "wpa",
+      "capture",
+      "offline"
+    ],
+    "commands": [
+      {
+        "label": "Dictionary check",
+        "cmd": "cowpatty -r capture.cap -f {wordlist} -s <ssid>",
+        "note": "Tests each word against the captured handshake for that SSID."
+      },
+      {
+        "label": "Use a hash table",
+        "cmd": "cowpatty -r capture.cap -d hashtable.hash -s <ssid>",
+        "note": "Runs against a precomputed table for speed."
+      }
+    ]
+  },
+  {
+    "slug": "crackmapexec",
+    "name": "CrackMapExec",
+    "category": "Post Exploitation",
+    "short": "Swiss-army knife for assessing Windows networks.",
+    "long": "CrackMapExec automates common tasks across a Windows network once you have credentials or access, enumerating hosts, shares, and sessions to map an environment. It is used in authorized internal assessments to understand reach and exposure.",
+    "apt": "crackmapexec",
+    "tags": [
+      "windows",
+      "smb",
+      "enumeration",
+      "active-directory"
+    ],
+    "commands": [
+      {
+        "label": "Check SMB on a range",
+        "cmd": "crackmapexec smb {target}/24",
+        "note": "Reports which hosts respond and their basic details."
+      },
+      {
+        "label": "Authenticated enumeration",
+        "cmd": "crackmapexec smb {target} -u user -p 'password' --shares",
+        "note": "Lists shares visible to the supplied credentials."
+      }
+    ]
+  },
+  {
+    "slug": "crunch",
+    "name": "Crunch",
+    "category": "Password Attacks",
+    "short": "Generates custom wordlists from patterns and character sets.",
+    "long": "Crunch builds wordlists to a specification: a length range, a character set, or a pattern, writing candidates to a file or straight into another tool. It is useful when a target has a known password format worth modelling.",
+    "apt": "crunch",
+    "tags": [
+      "wordlist",
+      "generation",
+      "brute-force"
+    ],
+    "commands": [
+      {
+        "label": "Fixed length list",
+        "cmd": "crunch 8 8 -o {wordlist}",
+        "note": "Every eight-character combination of the default set."
+      },
+      {
+        "label": "Custom character set",
+        "cmd": "crunch 6 6 abcABC123 -o {wordlist}",
+        "note": "Limits candidates to the characters you provide."
+      },
+      {
+        "label": "Pattern based",
+        "cmd": "crunch 8 8 -t pass@@@@ -o {wordlist}",
+        "note": "The @ marks positions that vary while the rest stays fixed."
+      }
+    ]
+  },
+  {
+    "slug": "cutycapt",
+    "name": "CutyCapt",
+    "category": "Reporting",
+    "short": "Renders a web page to an image file.",
+    "long": "CutyCapt loads a URL and saves it as an image, handy for grabbing evidence of how a page looked at a point in time. It is a small utility that slots into reporting and triage scripts.",
+    "apt": "cutycapt",
+    "tags": [
+      "reporting",
+      "screenshots",
+      "web",
+      "evidence"
+    ],
+    "commands": [
+      {
+        "label": "Capture a page",
+        "cmd": "cutycapt --url={url} --out=page.png",
+        "note": "Saves a rendered image of the page for the report."
+      }
+    ]
+  },
+  {
+    "slug": "dc3dd",
+    "name": "dc3dd",
+    "category": "Forensics",
+    "short": "Forensic disk imaging with hashing and logging.",
+    "long": "dc3dd copies disks and images the way dd does but adds on-the-fly hashing, progress, and logging suited to evidence handling. It is the imaging step that starts many forensic workflows.",
+    "apt": "dc3dd",
+    "tags": [
+      "forensics",
+      "imaging",
+      "hashing",
+      "disk"
+    ],
+    "commands": [
+      {
+        "label": "Image a device",
+        "cmd": "dc3dd if=/dev/sdX of=image.dd hash=sha256 log=image.log",
+        "note": "Copies the device and records a hash and a log for the record."
+      }
     ]
   },
   {
@@ -508,10 +473,2108 @@
     "short": "Classic web content scanner driven by a wordlist.",
     "long": "DIRB requests paths from a wordlist against a web server and reports the ones that exist, making it a straightforward way to discover directories and files. It is simple and dependable for early content discovery.",
     "apt": "dirb",
-    "tags": ["web", "content-discovery", "brute-force", "directories"],
+    "tags": [
+      "web",
+      "content-discovery",
+      "brute-force",
+      "directories"
+    ],
     "commands": [
-      { "label": "Scan a site", "cmd": "dirb {url}", "note": "Uses the built-in wordlist against the target." },
-      { "label": "Use a custom wordlist", "cmd": "dirb {url} {wordlist}", "note": "Runs your own list instead of the default." }
+      {
+        "label": "Scan a site",
+        "cmd": "dirb {url}",
+        "note": "Uses the built-in wordlist against the target."
+      },
+      {
+        "label": "Use a custom wordlist",
+        "cmd": "dirb {url} {wordlist}",
+        "note": "Runs your own list instead of the default."
+      }
+    ]
+  },
+  {
+    "slug": "dnsrecon",
+    "name": "DNSRecon",
+    "category": "Information Gathering",
+    "short": "Enumerates DNS records and probes for subdomains.",
+    "long": "DNSRecon pulls the records a domain publishes and tries several techniques to find hosts that are not obvious, including record enumeration and dictionary-based subdomain guessing. It is a quiet way to widen a scope before touching any host directly.",
+    "apt": "dnsrecon",
+    "tags": [
+      "dns",
+      "recon",
+      "subdomains",
+      "osint"
+    ],
+    "commands": [
+      {
+        "label": "Standard record enumeration",
+        "cmd": "dnsrecon -d {target}",
+        "note": "Pulls A, MX, NS, SOA, and TXT records for the domain."
+      },
+      {
+        "label": "Subdomain brute force",
+        "cmd": "dnsrecon -d {target} -D {wordlist} -t brt",
+        "note": "Guesses hostnames from a wordlist against the domain."
+      },
+      {
+        "label": "Zone transfer attempt",
+        "cmd": "dnsrecon -d {target} -t axfr",
+        "note": "Checks whether a name server hands over its whole zone."
+      }
+    ]
+  },
+  {
+    "slug": "dradis",
+    "name": "Dradis",
+    "category": "Reporting",
+    "short": "Aggregates findings and generates assessment reports.",
+    "long": "Dradis centralizes notes, tool output, and findings so a team can collaborate and export consistent reports at the end of an engagement. It focuses on the write-up stage rather than the testing itself.",
+    "apt": "dradis",
+    "tags": [
+      "reporting",
+      "collaboration",
+      "documentation",
+      "export"
+    ],
+    "commands": [
+      {
+        "label": "Start Dradis",
+        "cmd": "service dradis start",
+        "note": "Runs the Dradis service; open the local web interface."
+      }
+    ]
+  },
+  {
+    "slug": "driftnet",
+    "name": "Driftnet",
+    "category": "Sniffing & Spoofing",
+    "short": "Extracts images from observed network traffic.",
+    "long": "Driftnet pulls images out of traffic it can see on a network segment, used in authorized demonstrations of what unencrypted browsing exposes. It is a teaching and assessment tool for controlled environments.",
+    "apt": "driftnet",
+    "tags": [
+      "network",
+      "sniffing",
+      "images",
+      "demo"
+    ],
+    "commands": [
+      {
+        "label": "Watch an interface",
+        "cmd": "driftnet -i {interface}",
+        "note": "Displays images reconstructed from visible traffic."
+      }
+    ]
+  },
+  {
+    "slug": "dsniff",
+    "name": "dsniff",
+    "category": "Sniffing & Spoofing",
+    "short": "Classic suite of network auditing and sniffing tools.",
+    "long": "dsniff bundles small utilities that demonstrate how unencrypted protocols leak data on a local network, used in authorized tests to make the case for encryption. It should never run on networks you do not control.",
+    "apt": "dsniff",
+    "tags": [
+      "network",
+      "sniffing",
+      "lan",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Watch for credentials",
+        "cmd": "dsniff -i {interface}",
+        "note": "Reports credentials seen in cleartext protocols on the segment."
+      }
+    ]
+  },
+  {
+    "slug": "powershell-empire",
+    "name": "Empire",
+    "category": "Exploitation",
+    "short": "Post-exploitation and command-and-control framework.",
+    "long": "Empire provides a framework for managing agents and modules during authorized red-team exercises, illustrating control and persistence in a controlled way. It is used strictly within a scoped, permitted engagement.",
+    "apt": "powershell-empire",
+    "tags": [
+      "c2",
+      "framework",
+      "red-team",
+      "post-exploitation"
+    ],
+    "commands": [
+      {
+        "label": "Start the server",
+        "cmd": "powershell-empire server",
+        "note": "Runs the Empire back end for agents to reach in a lab."
+      },
+      {
+        "label": "Start the client",
+        "cmd": "powershell-empire client",
+        "note": "Connects the operator console to the server."
+      }
+    ]
+  },
+  {
+    "slug": "enum4linux",
+    "name": "enum4linux",
+    "category": "Post Exploitation",
+    "short": "Enumerates information from Windows and Samba services.",
+    "long": "enum4linux queries SMB and related services to list shares, users, groups, and policy details a host exposes. It gathers the context that guides the next steps once you have network access to a target.",
+    "apt": "enum4linux",
+    "tags": [
+      "smb",
+      "windows",
+      "enumeration",
+      "samba"
+    ],
+    "commands": [
+      {
+        "label": "Full enumeration",
+        "cmd": "enum4linux -a {target}",
+        "note": "Runs every check the tool supports against the host."
+      },
+      {
+        "label": "List shares",
+        "cmd": "enum4linux -S {target}",
+        "note": "Focuses on the shared folders the host offers."
+      },
+      {
+        "label": "List users",
+        "cmd": "enum4linux -U {target}",
+        "note": "Pulls the user accounts visible over SMB."
+      }
+    ]
+  },
+  {
+    "slug": "ettercap",
+    "name": "Ettercap",
+    "category": "Sniffing & Spoofing",
+    "short": "Toolkit for on-path attacks on a local network.",
+    "long": "Ettercap can position itself between hosts on a switched LAN to observe and manipulate traffic, which is used in authorized tests to demonstrate the risk of unencrypted protocols. It should never be run on a network you do not control.",
+    "apt": "ettercap-graphical",
+    "tags": [
+      "mitm",
+      "network",
+      "sniffing",
+      "lan"
+    ],
+    "commands": [
+      {
+        "label": "Launch the GUI",
+        "cmd": "ettercap -G",
+        "note": "Opens the graphical interface for guided setup."
+      },
+      {
+        "label": "Text mode on an interface",
+        "cmd": "ettercap -T -i {interface}",
+        "note": "Runs in the terminal on the chosen adapter."
+      }
+    ]
+  },
+  {
+    "slug": "evil-winrm",
+    "name": "Evil-WinRM",
+    "category": "Post Exploitation",
+    "short": "Interactive shell over Windows Remote Management.",
+    "long": "Evil-WinRM connects to the WinRM service on a Windows host for which you have valid credentials, giving an interactive management shell used during authorized assessments. It relies on access you already legitimately hold.",
+    "apt": "evil-winrm",
+    "tags": [
+      "windows",
+      "winrm",
+      "shell",
+      "remote"
+    ],
+    "commands": [
+      {
+        "label": "Connect with credentials",
+        "cmd": "evil-winrm -i {target} -u user -p 'password'",
+        "note": "Opens a WinRM session on the authorized host."
+      }
+    ]
+  },
+  {
+    "slug": "exiftool",
+    "name": "ExifTool",
+    "category": "Forensics",
+    "short": "Reads and edits metadata inside files.",
+    "long": "ExifTool reports the metadata embedded in images, documents, and many other formats, which often reveals device details, timestamps, and locations useful in an investigation. It can also strip that metadata when needed.",
+    "apt": "libimage-exiftool-perl",
+    "tags": [
+      "forensics",
+      "metadata",
+      "images",
+      "osint"
+    ],
+    "commands": [
+      {
+        "label": "Read all metadata",
+        "cmd": "exiftool file.jpg",
+        "note": "Prints every metadata field the file carries."
+      },
+      {
+        "label": "Strip all metadata",
+        "cmd": "exiftool -all= file.jpg",
+        "note": "Removes metadata, keeping a backup by default."
+      }
+    ]
+  },
+  {
+    "slug": "eyewitness",
+    "name": "EyeWitness",
+    "category": "Reporting",
+    "short": "Captures screenshots of web services for a report.",
+    "long": "EyeWitness visits a list of web hosts and takes screenshots with basic details, producing a report that makes a large scope quick to review at a glance. It turns a long host list into something readable.",
+    "apt": "eyewitness",
+    "tags": [
+      "reporting",
+      "screenshots",
+      "web",
+      "triage"
+    ],
+    "commands": [
+      {
+        "label": "Screenshot a list",
+        "cmd": "eyewitness --web -f urls.txt -d report/",
+        "note": "Reads URLs from a file and builds a screenshot report."
+      }
+    ]
+  },
+  {
+    "slug": "faraday",
+    "name": "Faraday",
+    "category": "Reporting",
+    "short": "Collaborative workspace for organizing assessment findings.",
+    "long": "Faraday collects the output of many tools into a shared workspace so a team can track hosts, services, and vulnerabilities in one place and produce reports from them. It keeps the results of an engagement organized end to end.",
+    "apt": "faraday",
+    "tags": [
+      "reporting",
+      "collaboration",
+      "workspace",
+      "findings"
+    ],
+    "commands": [
+      {
+        "label": "Start the server",
+        "cmd": "faraday-server",
+        "note": "Launches the Faraday backend and web interface."
+      },
+      {
+        "label": "Open the client",
+        "cmd": "faraday-client",
+        "note": "Connects to a running Faraday workspace."
+      }
+    ]
+  },
+  {
+    "slug": "fern-wifi-cracker",
+    "name": "Fern Wi-Fi Cracker",
+    "category": "Wireless",
+    "short": "Graphical front end for wireless auditing.",
+    "long": "Fern Wi-Fi Cracker wraps common wireless testing steps in a GUI, guiding scanning and capture against networks you select. It lowers the command-line burden for authorized wireless assessments.",
+    "apt": "fern-wifi-cracker",
+    "tags": [
+      "wireless",
+      "gui",
+      "audit",
+      "wifi"
+    ],
+    "commands": [
+      {
+        "label": "Launch the GUI",
+        "cmd": "fern-wifi-cracker",
+        "note": "Opens the interface to pick an adapter and scan."
+      }
+    ]
+  },
+  {
+    "slug": "feroxbuster",
+    "name": "Feroxbuster",
+    "category": "Web Apps",
+    "short": "Recursive content discovery that follows what it finds.",
+    "long": "Feroxbuster brute-forces paths from a wordlist and automatically recurses into the directories it discovers, making deep site trees quick to map. Its speed and recursion set it apart from single-level scanners.",
+    "apt": "feroxbuster",
+    "tags": [
+      "web",
+      "content-discovery",
+      "brute-force",
+      "recursive"
+    ],
+    "commands": [
+      {
+        "label": "Recursive scan",
+        "cmd": "feroxbuster -u {url} -w {wordlist}",
+        "note": "Walks the wordlist and recurses into found directories."
+      },
+      {
+        "label": "Filter by status",
+        "cmd": "feroxbuster -u {url} -w {wordlist} -C 404",
+        "note": "Drops the given status codes from the output."
+      },
+      {
+        "label": "Add extensions",
+        "cmd": "feroxbuster -u {url} -w {wordlist} -x php,html,txt",
+        "note": "Appends extensions to catch files as well as folders."
+      }
+    ]
+  },
+  {
+    "slug": "ffuf",
+    "name": "ffuf",
+    "category": "Web Apps",
+    "short": "Fast web fuzzer for paths, parameters, and virtual hosts.",
+    "long": "ffuf replaces a FUZZ marker in a request with each entry from a wordlist and sorts the responses, making it flexible for content discovery, parameter mining, and virtual host hunting. Filters on status, size, or word count keep the output readable.",
+    "apt": "ffuf",
+    "tags": [
+      "web",
+      "fuzzer",
+      "content-discovery",
+      "fast"
+    ],
+    "commands": [
+      {
+        "label": "Directory fuzzing",
+        "cmd": "ffuf -u {url}/FUZZ -w {wordlist}",
+        "note": "The FUZZ keyword marks where each word is substituted."
+      },
+      {
+        "label": "Hide 404 responses",
+        "cmd": "ffuf -u {url}/FUZZ -w {wordlist} -fc 404",
+        "note": "Filters out not-found responses to cut noise."
+      },
+      {
+        "label": "Virtual host discovery",
+        "cmd": "ffuf -u {url} -H \"Host: FUZZ.{target}\" -w {wordlist}",
+        "note": "Fuzzes the Host header to find name-based vhosts."
+      }
+    ]
+  },
+  {
+    "slug": "fierce",
+    "name": "Fierce",
+    "category": "Information Gathering",
+    "short": "Locates non-contiguous hosts within a domain.",
+    "long": "Fierce works through DNS to find the hosts a domain exposes, including ranges that are not obvious from a single lookup. It is a focused DNS reconnaissance tool for widening a target list.",
+    "apt": "fierce",
+    "tags": [
+      "dns",
+      "recon",
+      "subdomains"
+    ],
+    "commands": [
+      {
+        "label": "Scan a domain",
+        "cmd": "fierce --domain {target}",
+        "note": "Enumerates hosts and ranges tied to the domain."
+      },
+      {
+        "label": "Use a custom wordlist",
+        "cmd": "fierce --domain {target} --wordlist {wordlist}",
+        "note": "Guesses hostnames from your own list."
+      }
+    ]
+  },
+  {
+    "slug": "foremost",
+    "name": "Foremost",
+    "category": "Forensics",
+    "short": "Recovers files from disk images by their signatures.",
+    "long": "Foremost carves files out of a disk image or raw device based on header and footer signatures, recovering data even when the file system is damaged. It is a staple of forensic recovery and data-carving work.",
+    "apt": "foremost",
+    "tags": [
+      "forensics",
+      "recovery",
+      "carving",
+      "disk"
+    ],
+    "commands": [
+      {
+        "label": "Carve from an image",
+        "cmd": "foremost -i image.dd -o output/",
+        "note": "Recovers files into the output directory."
+      },
+      {
+        "label": "Target specific types",
+        "cmd": "foremost -t jpg,pdf -i image.dd -o output/",
+        "note": "Limits recovery to the listed file types."
+      }
+    ]
+  },
+  {
+    "slug": "gobuster",
+    "name": "Gobuster",
+    "category": "Web Apps",
+    "short": "Brute-forces directories, files, and DNS names from a wordlist.",
+    "long": "Gobuster requests many paths or names from a wordlist and reports which ones exist based on the responses. It is a fast way to find unlinked content and hidden endpoints on a web server.",
+    "apt": "gobuster",
+    "tags": [
+      "web",
+      "brute-force",
+      "directories",
+      "content-discovery"
+    ],
+    "commands": [
+      {
+        "label": "Directory discovery",
+        "cmd": "gobuster dir -u {url} -w {wordlist}",
+        "note": "Walks the wordlist looking for live paths."
+      },
+      {
+        "label": "Filter by extension",
+        "cmd": "gobuster dir -u {url} -w {wordlist} -x php,txt,bak",
+        "note": "Appends extensions to each word to catch files."
+      },
+      {
+        "label": "Subdomain discovery",
+        "cmd": "gobuster dns -d {target} -w {wordlist}",
+        "note": "Guesses subdomains against the base domain."
+      }
+    ]
+  },
+  {
+    "slug": "hash-identifier",
+    "name": "hash-identifier",
+    "category": "Password Attacks",
+    "short": "Interactive helper for naming hash types.",
+    "long": "hash-identifier prompts for a hash and reports the formats that match its shape, giving another opinion alongside hashID. It is handy when you are unsure what a captured hash actually is.",
+    "apt": "hash-identifier",
+    "tags": [
+      "hashes",
+      "identification",
+      "analysis"
+    ],
+    "commands": [
+      {
+        "label": "Start the tool",
+        "cmd": "hash-identifier",
+        "note": "Runs interactively and asks you to paste a hash."
+      }
+    ]
+  },
+  {
+    "slug": "hashcat",
+    "name": "Hashcat",
+    "category": "Password Attacks",
+    "short": "GPU-accelerated hash recovery with flexible attack modes.",
+    "long": "Hashcat uses the GPU to test candidate passwords against captured hashes at high speed, supporting many hash types and attack strategies from straight wordlists to masks. As with any cracker, it is for hashes you are permitted to work on.",
+    "apt": "hashcat",
+    "tags": [
+      "hashes",
+      "cracking",
+      "gpu",
+      "offline"
+    ],
+    "commands": [
+      {
+        "label": "Wordlist attack",
+        "cmd": "hashcat -m 0 hashes.txt {wordlist}",
+        "note": "Mode 0 is raw MD5; pick the -m value for your hash type."
+      },
+      {
+        "label": "Wordlist plus rules",
+        "cmd": "hashcat -m 0 hashes.txt {wordlist} -r rules/best64.rule",
+        "note": "Applies mutation rules to each candidate word."
+      },
+      {
+        "label": "Mask attack",
+        "cmd": "hashcat -m 0 -a 3 hashes.txt ?u?l?l?l?d?d",
+        "note": "Brute forces a known password pattern with a mask."
+      }
+    ]
+  },
+  {
+    "slug": "hashid",
+    "name": "hashID",
+    "category": "Password Attacks",
+    "short": "Identifies the algorithm behind an unknown hash.",
+    "long": "hashID inspects a hash string and suggests which algorithms could have produced it, which tells you how to configure a cracker. It is a small but essential step before any offline recovery attempt.",
+    "apt": "hashid",
+    "tags": [
+      "hashes",
+      "identification",
+      "analysis"
+    ],
+    "commands": [
+      {
+        "label": "Identify a hash",
+        "cmd": "hashid '$1$abc$def'",
+        "note": "Prints the likely algorithms for the given hash."
+      },
+      {
+        "label": "Show hashcat modes",
+        "cmd": "hashid -m '$1$abc$def'",
+        "note": "Includes the matching hashcat mode numbers."
+      }
+    ]
+  },
+  {
+    "slug": "hostapd-wpe",
+    "name": "hostapd-wpe",
+    "category": "Wireless",
+    "short": "Sets up a test access point for enterprise Wi-Fi assessment.",
+    "long": "hostapd-wpe stands up a configurable access point used in authorized tests of enterprise wireless authentication, showing how misconfigured clients can be exposed. It belongs in a controlled lab or a scoped engagement only.",
+    "apt": "hostapd-wpe",
+    "tags": [
+      "wireless",
+      "enterprise",
+      "access-point",
+      "lab"
+    ],
+    "commands": [
+      {
+        "label": "Start the test AP",
+        "cmd": "hostapd-wpe hostapd-wpe.conf",
+        "note": "Runs the access point from a prepared config file."
+      }
+    ]
+  },
+  {
+    "slug": "hydra",
+    "name": "Hydra",
+    "category": "Password Attacks",
+    "short": "Tests login credentials across many network protocols.",
+    "long": "Hydra tries username and password combinations against network services such as SSH, FTP, and web forms to find weak credentials. It is strictly for systems you own or are authorized to test, since it generates many failed login attempts.",
+    "apt": "hydra",
+    "tags": [
+      "brute-force",
+      "credentials",
+      "login",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "SSH password test",
+        "cmd": "hydra -l admin -P {wordlist} ssh://{target}",
+        "note": "Tries each password in the list for the admin user."
+      },
+      {
+        "label": "FTP with user list",
+        "cmd": "hydra -L users.txt -P {wordlist} ftp://{target}",
+        "note": "Iterates over both a user list and a password list."
+      },
+      {
+        "label": "HTTP POST form",
+        "cmd": "hydra -l admin -P {wordlist} {target} http-post-form \"/login:user=^USER^&pass=^PASS^:Invalid\"",
+        "note": "The failure string tells Hydra which attempts were wrong."
+      }
+    ]
+  },
+  {
+    "slug": "impacket-scripts",
+    "name": "Impacket Scripts",
+    "category": "Post Exploitation",
+    "short": "Python tools for working with network protocols.",
+    "long": "Impacket provides ready-made scripts for interacting with SMB, MSRPC, and other Windows protocols, widely used in authorized testing to exercise services directly. The collection is a toolbox rather than a single program.",
+    "apt": "impacket-scripts",
+    "tags": [
+      "windows",
+      "smb",
+      "protocols",
+      "python"
+    ],
+    "commands": [
+      {
+        "label": "List available scripts",
+        "cmd": "ls /usr/share/doc/python3-impacket/examples",
+        "note": "Shows the example scripts the package ships."
+      },
+      {
+        "label": "Enumerate shares",
+        "cmd": "impacket-smbclient user@{target}",
+        "note": "Opens an SMB session with the given credentials."
+      }
+    ]
+  },
+  {
+    "slug": "john",
+    "name": "John the Ripper",
+    "category": "Password Attacks",
+    "short": "Recovers passwords from captured hashes offline.",
+    "long": "John the Ripper takes hashes you have lawfully obtained and works to recover the original passwords using wordlists and rule-based mutations. It runs offline against the hash file, so it never touches the source system.",
+    "apt": "john",
+    "tags": [
+      "hashes",
+      "cracking",
+      "offline",
+      "credentials"
+    ],
+    "commands": [
+      {
+        "label": "Wordlist mode",
+        "cmd": "john --wordlist={wordlist} hashes.txt",
+        "note": "Tries each word, applying any configured rules."
+      },
+      {
+        "label": "Show cracked results",
+        "cmd": "john --show hashes.txt",
+        "note": "Prints passwords John has already recovered."
+      },
+      {
+        "label": "Prepare a zip hash",
+        "cmd": "zip2john file.zip > zip.hash",
+        "note": "Extracts a crackable hash from a protected archive."
+      }
+    ]
+  },
+  {
+    "slug": "keepnote",
+    "name": "KeepNote",
+    "category": "Reporting",
+    "short": "Simple notebook for capturing findings and screenshots.",
+    "long": "KeepNote keeps notes and attached images in a folder structure, a lightweight place to collect evidence during a test. It focuses on quick capture rather than heavy formatting.",
+    "apt": "keepnote",
+    "tags": [
+      "reporting",
+      "notes",
+      "documentation",
+      "evidence"
+    ],
+    "commands": [
+      {
+        "label": "Open KeepNote",
+        "cmd": "keepnote",
+        "note": "Starts the notebook for collecting notes and screenshots."
+      }
+    ]
+  },
+  {
+    "slug": "kismet",
+    "name": "Kismet",
+    "category": "Wireless",
+    "short": "Wireless network detector and traffic monitor.",
+    "long": "Kismet passively listens for wireless networks and devices, logging what it sees without transmitting. It is well suited to surveying the wireless landscape of an authorized site and spotting rogue access points.",
+    "apt": "kismet",
+    "tags": [
+      "wireless",
+      "monitor",
+      "detection",
+      "passive"
+    ],
+    "commands": [
+      {
+        "label": "Start with an interface",
+        "cmd": "kismet -c {interface}",
+        "note": "Begins passive capture on the given adapter."
+      },
+      {
+        "label": "Open the web UI",
+        "cmd": "kismet",
+        "note": "Runs Kismet; browse to the local web interface it prints."
+      }
+    ]
+  },
+  {
+    "slug": "legion",
+    "name": "Legion",
+    "category": "Vulnerability Analysis",
+    "short": "Graphical framework that ties scanning tools together.",
+    "long": "Legion coordinates discovery and scanning tools behind a single interface, running them against targets and collecting the results in one view. It streamlines the early phases of an assessment on hosts you are authorized to test.",
+    "apt": "legion",
+    "tags": [
+      "scanner",
+      "framework",
+      "gui",
+      "automation"
+    ],
+    "commands": [
+      {
+        "label": "Launch Legion",
+        "cmd": "legion",
+        "note": "Opens the GUI to add targets and start scans."
+      }
+    ]
+  },
+  {
+    "slug": "linpeas",
+    "name": "LinPEAS",
+    "category": "Post Exploitation",
+    "short": "Surveys a Linux host for privilege-escalation openings.",
+    "long": "LinPEAS runs a broad set of local checks on a Linux system and highlights misconfigurations, weak permissions, and other findings that could allow a low-privilege user to gain more access. It is used on hosts where you already have authorized access to assess hardening.",
+    "apt": "peass",
+    "tags": [
+      "privesc",
+      "linux",
+      "enumeration",
+      "local"
+    ],
+    "commands": [
+      {
+        "label": "Run the survey",
+        "cmd": "./linpeas.sh",
+        "note": "Executes all local checks and colors the noteworthy results."
+      },
+      {
+        "label": "Save the output",
+        "cmd": "./linpeas.sh | tee linpeas.txt",
+        "note": "Keeps a copy of the findings for the report."
+      }
+    ]
+  },
+  {
+    "slug": "lynis",
+    "name": "Lynis",
+    "category": "Vulnerability Analysis",
+    "short": "Audits the hardening of a local Unix system.",
+    "long": "Lynis runs on a host you administer and checks its configuration against hardening best practices, reporting weak settings and suggestions. It is a defensive audit tool for measuring and improving a system's posture.",
+    "apt": "lynis",
+    "tags": [
+      "audit",
+      "hardening",
+      "linux",
+      "compliance"
+    ],
+    "commands": [
+      {
+        "label": "Full system audit",
+        "cmd": "lynis audit system",
+        "note": "Runs the complete set of local hardening checks."
+      },
+      {
+        "label": "Show the report",
+        "cmd": "cat /var/log/lynis-report.dat",
+        "note": "Reads the detailed results from the last run."
+      }
+    ]
+  },
+  {
+    "slug": "macchanger",
+    "name": "MAC Changer",
+    "category": "Sniffing & Spoofing",
+    "short": "Views and changes a network adapter's MAC address.",
+    "long": "MAC Changer reads and sets the hardware address of an interface, which is useful in testing and privacy scenarios on equipment you control. It is a small utility rather than an attack tool.",
+    "apt": "macchanger",
+    "tags": [
+      "network",
+      "mac",
+      "utility",
+      "interface"
+    ],
+    "commands": [
+      {
+        "label": "Show current MAC",
+        "cmd": "macchanger -s {interface}",
+        "note": "Prints the current and permanent hardware addresses."
+      },
+      {
+        "label": "Random MAC",
+        "cmd": "macchanger -r {interface}",
+        "note": "Assigns a random address; bring the interface down first."
+      }
+    ]
+  },
+  {
+    "slug": "magictree",
+    "name": "MagicTree",
+    "category": "Reporting",
+    "short": "Consolidates tool output into structured data for reports.",
+    "long": "MagicTree collects the output of many tools into a tree it can query and export, cutting the manual effort of turning scattered results into a report. It focuses on the data-management side of an engagement.",
+    "apt": "magictree",
+    "tags": [
+      "reporting",
+      "data",
+      "consolidation",
+      "export"
+    ],
+    "commands": [
+      {
+        "label": "Launch MagicTree",
+        "cmd": "magictree",
+        "note": "Opens the interface to import tool output and generate reports."
+      }
+    ]
+  },
+  {
+    "slug": "masscan",
+    "name": "Masscan",
+    "category": "Information Gathering",
+    "short": "Very fast port scanner for large address ranges.",
+    "long": "Masscan trades Nmap's depth for raw speed, sending packets asynchronously so a wide range of hosts can be swept quickly. It is handy for a first pass over a large scope, then Nmap follows up on whatever answers.",
+    "apt": "masscan",
+    "tags": [
+      "scanner",
+      "ports",
+      "fast",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "Scan a port across a range",
+        "cmd": "masscan {target}/24 -p{port} --rate 1000",
+        "note": "Keep the rate modest so you do not overwhelm the network."
+      },
+      {
+        "label": "Common web ports",
+        "cmd": "masscan {target} -p80,443,8080,8443",
+        "note": "Quick check for web listeners before deeper scanning."
+      },
+      {
+        "label": "Save results to file",
+        "cmd": "masscan {target}/24 -p1-65535 -oL out.txt",
+        "note": "List output that other tools can parse later."
+      }
+    ]
+  },
+  {
+    "slug": "mdk3",
+    "name": "MDK3",
+    "category": "Wireless",
+    "short": "Stress-tests wireless networks and drivers.",
+    "long": "MDK3 exercises 802.11 protocol behavior to test how access points and clients handle unusual conditions. It is a lab and authorized-assessment tool for stress testing, not for use on networks you do not control.",
+    "apt": "mdk3",
+    "tags": [
+      "wireless",
+      "stress-test",
+      "802.11",
+      "lab"
+    ],
+    "commands": [
+      {
+        "label": "Show modes",
+        "cmd": "mdk3 --help",
+        "note": "Lists the available test modes and their options."
+      },
+      {
+        "label": "Beacon flood test",
+        "cmd": "mdk3 {interface}mon b",
+        "note": "Generates beacon frames to test client handling in a lab."
+      }
+    ]
+  },
+  {
+    "slug": "medusa",
+    "name": "Medusa",
+    "category": "Password Attacks",
+    "short": "Parallel login tester across many protocols.",
+    "long": "Medusa checks credentials against network services in parallel, supporting a broad set of protocols with a modular design. Like any credential tester it is for systems you own or are authorized to assess.",
+    "apt": "medusa",
+    "tags": [
+      "brute-force",
+      "credentials",
+      "login",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "SSH credential test",
+        "cmd": "medusa -h {target} -u admin -P {wordlist} -M ssh",
+        "note": "Tries each password for the admin user over SSH."
+      },
+      {
+        "label": "With a user list",
+        "cmd": "medusa -h {target} -U users.txt -P {wordlist} -M ftp",
+        "note": "Iterates over both user and password lists."
+      }
+    ]
+  },
+  {
+    "slug": "metagoofil",
+    "name": "Metagoofil",
+    "category": "Reporting",
+    "short": "Extracts metadata from an organization's public documents.",
+    "long": "Metagoofil gathers public documents tied to a domain and pulls their metadata, which can reveal usernames, software, and paths worth noting in a report. It bridges OSINT gathering and the write-up that follows.",
+    "apt": "metagoofil",
+    "tags": [
+      "reporting",
+      "metadata",
+      "osint",
+      "documents"
+    ],
+    "commands": [
+      {
+        "label": "Collect document metadata",
+        "cmd": "metagoofil -d {target} -t pdf,docx -o output/",
+        "note": "Downloads matching documents and extracts their metadata."
+      }
+    ]
+  },
+  {
+    "slug": "metasploit",
+    "name": "Metasploit Framework",
+    "category": "Exploitation",
+    "short": "Framework for developing and running exploit modules.",
+    "long": "The Metasploit Framework organizes exploits, payloads, and auxiliary modules behind a common console, so a confirmed weakness can be tested in a controlled way. It is a core tool for validating findings during authorized engagements.",
+    "apt": "metasploit-framework",
+    "tags": [
+      "framework",
+      "exploit",
+      "payloads",
+      "console"
+    ],
+    "commands": [
+      {
+        "label": "Launch the console",
+        "cmd": "msfconsole",
+        "note": "Opens the interactive Metasploit prompt."
+      },
+      {
+        "label": "Search modules",
+        "cmd": "msfconsole -q -x \"search {target}; exit\"",
+        "note": "Quiet mode runs a search and exits."
+      },
+      {
+        "label": "Update the framework",
+        "cmd": "msfupdate",
+        "note": "Pulls the latest modules and fixes."
+      }
+    ]
+  },
+  {
+    "slug": "mimikatz",
+    "name": "Mimikatz",
+    "category": "Post Exploitation",
+    "short": "Demonstrates Windows credential-handling weaknesses.",
+    "long": "Mimikatz is the reference tool for showing how Windows credential material can be exposed on a host you already control, used to prove impact in authorized tests. It runs on the target system with the access you already hold.",
+    "apt": "mimikatz",
+    "tags": [
+      "windows",
+      "credentials",
+      "post-exploitation",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Start Mimikatz",
+        "cmd": "mimikatz",
+        "note": "Opens the interactive prompt on an authorized Windows host."
+      },
+      {
+        "label": "Check privileges",
+        "cmd": "privilege::debug",
+        "note": "Confirms the token rights needed before other modules."
+      }
+    ]
+  },
+  {
+    "slug": "mitmproxy",
+    "name": "mitmproxy",
+    "category": "Sniffing & Spoofing",
+    "short": "Interactive HTTPS proxy for inspecting traffic.",
+    "long": "mitmproxy is a console proxy for viewing, editing, and replaying HTTP and HTTPS traffic from clients you configure to trust it. It is widely used to understand and test how apps talk to their back ends.",
+    "apt": "mitmproxy",
+    "tags": [
+      "proxy",
+      "http",
+      "interception",
+      "analysis"
+    ],
+    "commands": [
+      {
+        "label": "Start the console proxy",
+        "cmd": "mitmproxy",
+        "note": "Listens on 8080; point the client's proxy at it."
+      },
+      {
+        "label": "Web interface",
+        "cmd": "mitmweb",
+        "note": "Runs the same proxy with a browser front end."
+      }
+    ]
+  },
+  {
+    "slug": "msfvenom",
+    "name": "MSFvenom",
+    "category": "Exploitation",
+    "short": "Generates and encodes Metasploit payloads.",
+    "long": "MSFvenom builds standalone payloads in many formats for use in authorized testing, letting you set the payload, options, and output type from one command. It is the payload generator that pairs with the Metasploit Framework.",
+    "apt": "metasploit-framework",
+    "tags": [
+      "payloads",
+      "metasploit",
+      "generation",
+      "exploit"
+    ],
+    "commands": [
+      {
+        "label": "List payloads",
+        "cmd": "msfvenom -l payloads",
+        "note": "Shows every payload you can build."
+      },
+      {
+        "label": "Build a test payload",
+        "cmd": "msfvenom -p <payload> LHOST={target} LPORT={port} -f elf -o payload.bin",
+        "note": "Set the listener host and port for your lab callback."
+      }
+    ]
+  },
+  {
+    "slug": "ncrack",
+    "name": "Ncrack",
+    "category": "Password Attacks",
+    "short": "High-speed network authentication tester.",
+    "long": "Ncrack, from the Nmap project, tests login credentials against network services at speed with tunable timing. It is built for auditing weak passwords across many hosts under authorization.",
+    "apt": "ncrack",
+    "tags": [
+      "brute-force",
+      "credentials",
+      "network",
+      "login"
+    ],
+    "commands": [
+      {
+        "label": "Test SSH logins",
+        "cmd": "ncrack -u admin -P {wordlist} ssh://{target}",
+        "note": "Runs the password list against the SSH service."
+      },
+      {
+        "label": "Test a specific port",
+        "cmd": "ncrack -u admin -P {wordlist} {target}:{port}",
+        "note": "Points the test at a service on a chosen port."
+      }
+    ]
+  },
+  {
+    "slug": "netcat",
+    "name": "Netcat",
+    "category": "Exploitation",
+    "short": "Reads and writes raw TCP and UDP connections.",
+    "long": "Netcat is a small utility that opens, listens on, and pipes data across network connections, which makes it handy for banner grabbing, quick file transfers, and testing whether a port behaves as expected. It is a staple of both offense and troubleshooting.",
+    "apt": "netcat-traditional",
+    "tags": [
+      "network",
+      "tcp",
+      "listener",
+      "utility"
+    ],
+    "commands": [
+      {
+        "label": "Connect to a port",
+        "cmd": "nc {target} {port}",
+        "note": "Opens an interactive connection to the service."
+      },
+      {
+        "label": "Grab a banner",
+        "cmd": "nc -v {target} {port}",
+        "note": "Verbose connect that prints the greeting a service sends."
+      },
+      {
+        "label": "Listen on a port",
+        "cmd": "nc -lvnp {port}",
+        "note": "Waits for an inbound connection on the given port."
+      }
+    ]
+  },
+  {
+    "slug": "nikto",
+    "name": "Nikto",
+    "category": "Vulnerability Analysis",
+    "short": "Scans web servers for known issues and risky files.",
+    "long": "Nikto checks a web server against a large list of known-problem files, outdated components, and common misconfigurations. It is loud by design and best pointed only at hosts you are authorized to test.",
+    "apt": "nikto",
+    "tags": [
+      "web",
+      "scanner",
+      "vulnerability",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Scan a host",
+        "cmd": "nikto -h {url}",
+        "note": "Runs the full check set against the target URL."
+      },
+      {
+        "label": "Scan a specific port",
+        "cmd": "nikto -h {target} -p {port}",
+        "note": "Point Nikto at a non-standard web port."
+      },
+      {
+        "label": "Save an HTML report",
+        "cmd": "nikto -h {url} -o report.html -Format html",
+        "note": "Writes findings to a shareable report file."
+      }
+    ]
+  },
+  {
+    "slug": "nmap",
+    "name": "Nmap",
+    "category": "Information Gathering",
+    "short": "Maps which ports answer on a host and what software sits behind them.",
+    "long": "Nmap sends crafted probes to a target and reads the replies to build a picture of open ports, running services, and often the operating system. It is usually the first tool run against an in-scope host to decide where to look next.",
+    "apt": "nmap",
+    "tags": [
+      "scanner",
+      "ports",
+      "recon",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "Service and version scan",
+        "cmd": "nmap -sV {target}",
+        "note": "Identifies the service and version string on each open port."
+      },
+      {
+        "label": "Full TCP port sweep",
+        "cmd": "nmap -p- {target}",
+        "note": "Checks all 65535 TCP ports instead of the default top 1000."
+      },
+      {
+        "label": "Default script scan",
+        "cmd": "nmap -sC -sV {target}",
+        "note": "Runs the safe default NSE scripts alongside version detection."
+      },
+      {
+        "label": "Single port check",
+        "cmd": "nmap -p {port} {target}",
+        "note": "Focus on one port when you already know what you are after."
+      },
+      {
+        "label": "OS and traceroute",
+        "cmd": "nmap -A {target}",
+        "note": "Aggressive mode: OS guess, versions, scripts, and route. Noisy."
+      }
+    ]
+  },
+  {
+    "slug": "nuclei",
+    "name": "Nuclei",
+    "category": "Vulnerability Analysis",
+    "short": "Template-driven scanner for known vulnerabilities and exposures.",
+    "long": "Nuclei runs a community library of YAML templates against a target, each describing how to detect one specific issue. Because checks are just templates, coverage stays current and false positives are easy to audit.",
+    "apt": "nuclei",
+    "tags": [
+      "scanner",
+      "templates",
+      "vulnerability",
+      "web"
+    ],
+    "commands": [
+      {
+        "label": "Scan with all templates",
+        "cmd": "nuclei -u {url}",
+        "note": "Runs the default template set against one target."
+      },
+      {
+        "label": "Only critical findings",
+        "cmd": "nuclei -u {url} -severity critical,high",
+        "note": "Filters to the templates that matter most first."
+      },
+      {
+        "label": "Update templates",
+        "cmd": "nuclei -update-templates",
+        "note": "Pulls the latest community templates before a scan."
+      }
+    ]
+  },
+  {
+    "slug": "openvas",
+    "name": "OpenVAS / Greenbone",
+    "category": "Vulnerability Analysis",
+    "short": "Full-scale network vulnerability scanner.",
+    "long": "OpenVAS, now part of the Greenbone stack, runs a large, regularly updated feed of network vulnerability tests against hosts and reports findings with severities. It is a heavyweight scanner for broad, authorized assessments.",
+    "apt": "openvas",
+    "tags": [
+      "scanner",
+      "network",
+      "vulnerability",
+      "enterprise"
+    ],
+    "commands": [
+      {
+        "label": "Run initial setup",
+        "cmd": "gvm-setup",
+        "note": "Prepares the feeds and services on first use."
+      },
+      {
+        "label": "Check the setup",
+        "cmd": "gvm-check-setup",
+        "note": "Verifies the installation before scanning."
+      },
+      {
+        "label": "Start the services",
+        "cmd": "gvm-start",
+        "note": "Launches the scanner and opens the web interface."
+      }
+    ]
+  },
+  {
+    "slug": "zaproxy",
+    "name": "OWASP ZAP",
+    "category": "Web Apps",
+    "short": "Open-source intercepting proxy and web scanner.",
+    "long": "OWASP ZAP sits between the browser and a target to intercept and modify traffic, and can run automated scans to surface common web flaws. It is a full alternative to a commercial proxy for hands-on web testing.",
+    "apt": "zaproxy",
+    "tags": [
+      "web",
+      "proxy",
+      "scanner",
+      "interception"
+    ],
+    "commands": [
+      {
+        "label": "Launch the GUI",
+        "cmd": "zaproxy",
+        "note": "Opens ZAP; set the browser proxy to 127.0.0.1:8080."
+      },
+      {
+        "label": "Headless baseline scan",
+        "cmd": "zaproxy -cmd -quickurl {url} -quickout report.html",
+        "note": "Runs an automated scan and writes a report without the GUI."
+      }
+    ]
+  },
+  {
+    "slug": "patator",
+    "name": "Patator",
+    "category": "Password Attacks",
+    "short": "Flexible, scriptable brute-forcing tool.",
+    "long": "Patator takes a modular approach to credential testing, letting you tune exactly how requests and responses are handled across many modules. Its flexibility helps when a target needs custom logic that simpler tools cannot express.",
+    "apt": "patator",
+    "tags": [
+      "brute-force",
+      "credentials",
+      "scriptable",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "SSH login test",
+        "cmd": "patator ssh_login host={target} user=admin password=FILE0 0={wordlist}",
+        "note": "FILE0 pulls each candidate from the wordlist."
+      },
+      {
+        "label": "Filter noise by response",
+        "cmd": "patator ssh_login host={target} user=admin password=FILE0 0={wordlist} -x ignore:mesg='Authentication failed'",
+        "note": "Hides expected failures so hits stand out."
+      }
+    ]
+  },
+  {
+    "slug": "pipal",
+    "name": "Pipal",
+    "category": "Reporting",
+    "short": "Summarizes patterns in a set of recovered passwords.",
+    "long": "Pipal takes a list of passwords recovered during an authorized test and reports patterns such as lengths, common bases, and reuse, which strengthens the recommendations in a report. It turns raw results into a story about password hygiene.",
+    "apt": "pipal",
+    "tags": [
+      "reporting",
+      "passwords",
+      "analysis",
+      "statistics"
+    ],
+    "commands": [
+      {
+        "label": "Analyze a password list",
+        "cmd": "pipal {wordlist}",
+        "note": "Prints statistics and common patterns for the list."
+      }
+    ]
+  },
+  {
+    "slug": "pixiewps",
+    "name": "Pixiewps",
+    "category": "Wireless",
+    "short": "Offline tool for a specific WPS weakness.",
+    "long": "Pixiewps performs the offline computation used in the pixie-dust technique against routers with a particular WPS flaw. It is usually paired with a capture tool and used only in authorized wireless assessments.",
+    "apt": "pixiewps",
+    "tags": [
+      "wireless",
+      "wps",
+      "offline"
+    ],
+    "commands": [
+      {
+        "label": "Run the computation",
+        "cmd": "pixiewps -e <pke> -r <pkr> -s <ehash1> -z <ehash2> -a <authkey> -n <enonce>",
+        "note": "Feed in the values captured by the paired WPS tool."
+      }
+    ]
+  },
+  {
+    "slug": "powersploit",
+    "name": "PowerSploit",
+    "category": "Post Exploitation",
+    "short": "Collection of PowerShell modules for testing Windows hosts.",
+    "long": "PowerSploit gathers PowerShell scripts used in authorized Windows assessments for tasks like local enumeration and reconnaissance. The modules run on hosts you already have access to within a defined scope.",
+    "apt": "powersploit",
+    "tags": [
+      "windows",
+      "powershell",
+      "enumeration",
+      "post-exploitation"
+    ],
+    "commands": [
+      {
+        "label": "Locate the modules",
+        "cmd": "ls /usr/share/windows-resources/powersploit",
+        "note": "Shows the scripts available to stage for a test."
+      }
+    ]
+  },
+  {
+    "slug": "reaver",
+    "name": "Reaver",
+    "category": "Wireless",
+    "short": "Tests routers for weak WPS configurations.",
+    "long": "Reaver targets the WPS feature on wireless routers to demonstrate how a weak setup can expose the network key. Use it only against access points you own or are explicitly authorized to assess.",
+    "apt": "reaver",
+    "tags": [
+      "wireless",
+      "wps",
+      "wifi",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Attempt WPS test",
+        "cmd": "reaver -i {interface}mon -b AA:BB:CC:DD:EE:FF -vv",
+        "note": "Replace the BSSID with the authorized target access point."
+      },
+      {
+        "label": "Pixie-dust mode",
+        "cmd": "reaver -i {interface}mon -b AA:BB:CC:DD:EE:FF -K 1",
+        "note": "Uses the faster offline WPS technique where applicable."
+      }
+    ]
+  },
+  {
+    "slug": "recon-ng",
+    "name": "Recon-ng",
+    "category": "Information Gathering",
+    "short": "Modular framework for organizing OSINT gathering.",
+    "long": "Recon-ng gives OSINT work a console with modules, workspaces, and a local database, so results from many sources stay organized in one place. It suits structured reconnaissance where findings need to be tracked and reused.",
+    "apt": "recon-ng",
+    "tags": [
+      "osint",
+      "framework",
+      "recon",
+      "modules"
+    ],
+    "commands": [
+      {
+        "label": "Launch the console",
+        "cmd": "recon-ng",
+        "note": "Opens the interactive framework prompt."
+      },
+      {
+        "label": "Start a workspace",
+        "cmd": "recon-ng -w {target}",
+        "note": "Keeps this target's data in its own workspace."
+      }
+    ]
+  },
+  {
+    "slug": "recordmydesktop",
+    "name": "recordMyDesktop",
+    "category": "Reporting",
+    "short": "Records the desktop to capture proof of a finding.",
+    "long": "recordMyDesktop captures the screen to a video file, which is a clean way to preserve a repeatable proof-of-concept for a report when a screenshot is not enough. It keeps evidence that reviewers can watch step by step.",
+    "apt": "recordmydesktop",
+    "tags": [
+      "reporting",
+      "screen-recording",
+      "evidence",
+      "proof-of-concept"
+    ],
+    "commands": [
+      {
+        "label": "Record the screen",
+        "cmd": "recordmydesktop -o proof.ogv",
+        "note": "Captures the desktop to a video file; stop with Ctrl+C."
+      },
+      {
+        "label": "Record without sound",
+        "cmd": "recordmydesktop --no-sound -o proof.ogv",
+        "note": "Skips audio when only the screen matters."
+      }
+    ]
+  },
+  {
+    "slug": "responder",
+    "name": "Responder",
+    "category": "Sniffing & Spoofing",
+    "short": "Answers name-resolution requests to capture credentials in a lab.",
+    "long": "Responder listens for broadcast name-resolution queries on a Windows network and answers them, which in an authorized test can surface hashes that show how spoofing risk plays out. It is a lab and engagement tool, not something to run on shared networks.",
+    "apt": "responder",
+    "tags": [
+      "network",
+      "windows",
+      "spoofing",
+      "credentials"
+    ],
+    "commands": [
+      {
+        "label": "Listen on an interface",
+        "cmd": "responder -I {interface}",
+        "note": "Starts answering name-resolution queries on the adapter."
+      },
+      {
+        "label": "Analyze without answering",
+        "cmd": "responder -I {interface} -A",
+        "note": "Passive mode observes queries without responding."
+      }
+    ]
+  },
+  {
+    "slug": "routersploit",
+    "name": "RouterSploit",
+    "category": "Exploitation",
+    "short": "Framework for testing embedded and router devices.",
+    "long": "RouterSploit organizes checks and modules aimed at routers and other embedded devices, helping validate known issues on hardware within scope. It mirrors the Metasploit workflow for the embedded world.",
+    "apt": "routersploit",
+    "tags": [
+      "embedded",
+      "routers",
+      "framework",
+      "iot"
+    ],
+    "commands": [
+      {
+        "label": "Launch the console",
+        "cmd": "rsf",
+        "note": "Opens the RouterSploit interactive prompt."
+      }
+    ]
+  },
+  {
+    "slug": "scalpel",
+    "name": "Scalpel",
+    "category": "Forensics",
+    "short": "File carver driven by a configurable header list.",
+    "long": "Scalpel recovers files from an image based on header and footer patterns defined in its configuration, letting you tune exactly which types to carve. It is a focused alternative when you know the formats you are after.",
+    "apt": "scalpel",
+    "tags": [
+      "forensics",
+      "carving",
+      "recovery",
+      "disk"
+    ],
+    "commands": [
+      {
+        "label": "Carve from an image",
+        "cmd": "scalpel image.dd -o output/",
+        "note": "Recovers the configured file types into the output folder."
+      }
+    ]
+  },
+  {
+    "slug": "searchsploit",
+    "name": "SearchSploit",
+    "category": "Exploitation",
+    "short": "Searches the local Exploit-DB archive from the terminal.",
+    "long": "SearchSploit queries an offline copy of the Exploit-DB archive so you can find proof-of-concept code for a known product and version without going online. It is a quick way to check whether a discovered version has public exploits.",
+    "apt": "exploitdb",
+    "tags": [
+      "exploit-db",
+      "search",
+      "research",
+      "offline"
+    ],
+    "commands": [
+      {
+        "label": "Search by product",
+        "cmd": "searchsploit {target}",
+        "note": "Lists archive entries matching the term."
+      },
+      {
+        "label": "Copy an exploit locally",
+        "cmd": "searchsploit -m 12345",
+        "note": "Mirrors the entry by its ID into the current directory."
+      },
+      {
+        "label": "Update the archive",
+        "cmd": "searchsploit -u",
+        "note": "Refreshes the local Exploit-DB copy."
+      }
+    ]
+  },
+  {
+    "slug": "skipfish",
+    "name": "Skipfish",
+    "category": "Vulnerability Analysis",
+    "short": "Fast active web reconnaissance and scanning.",
+    "long": "Skipfish builds an interactive site map by crawling aggressively and running security checks along the way, producing a report of issues it finds. Its speed suits mapping large applications quickly.",
+    "apt": "skipfish",
+    "tags": [
+      "web",
+      "scanner",
+      "crawler",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Scan into a report folder",
+        "cmd": "skipfish -o output/ {url}",
+        "note": "Writes the interactive report into the output directory."
+      },
+      {
+        "label": "Use a wordlist",
+        "cmd": "skipfish -o output/ -W {wordlist} {url}",
+        "note": "Drives content discovery from your own list."
+      }
+    ]
+  },
+  {
+    "slug": "smbclient",
+    "name": "smbclient",
+    "category": "Post Exploitation",
+    "short": "Command-line client for browsing SMB shares.",
+    "long": "smbclient connects to Windows and Samba file shares from the terminal to list contents and transfer files. During a test it confirms what a share actually exposes once credentials or anonymous access are available.",
+    "apt": "smbclient",
+    "tags": [
+      "smb",
+      "shares",
+      "files",
+      "windows"
+    ],
+    "commands": [
+      {
+        "label": "List shares",
+        "cmd": "smbclient -L {target}",
+        "note": "Shows the shares a host advertises."
+      },
+      {
+        "label": "Connect to a share",
+        "cmd": "smbclient //{target}/share",
+        "note": "Opens an interactive session on the named share."
+      },
+      {
+        "label": "Anonymous listing",
+        "cmd": "smbclient -L {target} -N",
+        "note": "Tries listing without supplying a password."
+      }
+    ]
+  },
+  {
+    "slug": "setoolkit",
+    "name": "Social-Engineer Toolkit",
+    "category": "Exploitation",
+    "short": "Framework for authorized social-engineering tests.",
+    "long": "The Social-Engineer Toolkit assembles templates for phishing and related human-factor tests used in authorized awareness engagements. It should only be run with clear written permission and a defined scope.",
+    "apt": "set",
+    "tags": [
+      "social-engineering",
+      "phishing",
+      "framework",
+      "awareness"
+    ],
+    "commands": [
+      {
+        "label": "Launch the toolkit",
+        "cmd": "setoolkit",
+        "note": "Opens the menu-driven interface for scoped campaigns."
+      }
+    ]
+  },
+  {
+    "slug": "spiderfoot",
+    "name": "SpiderFoot",
+    "category": "Information Gathering",
+    "short": "Automated OSINT collection with a web dashboard.",
+    "long": "SpiderFoot runs a wide set of OSINT modules against a target and presents the results through a web interface, connecting emails, hosts, and exposures automatically. It is useful for a broad, hands-off first sweep.",
+    "apt": "spiderfoot",
+    "tags": [
+      "osint",
+      "automation",
+      "recon",
+      "dashboard"
+    ],
+    "commands": [
+      {
+        "label": "Start the web UI",
+        "cmd": "spiderfoot -l 127.0.0.1:5001",
+        "note": "Runs the dashboard on the given address and port."
+      },
+      {
+        "label": "Command-line scan",
+        "cmd": "spiderfoot -s {target} -o csv",
+        "note": "Runs a scan and writes results as CSV."
+      }
+    ]
+  },
+  {
+    "slug": "sqlmap",
+    "name": "sqlmap",
+    "category": "Web Apps",
+    "short": "Automates finding and confirming SQL injection points.",
+    "long": "sqlmap takes a request and methodically tests its parameters for SQL injection, then, once a point is confirmed, can enumerate the database structure. It is powerful and intrusive, so it belongs only on targets you are scoped to test.",
+    "apt": "sqlmap",
+    "tags": [
+      "web",
+      "sql-injection",
+      "database",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Test a URL parameter",
+        "cmd": "sqlmap -u \"{url}?id=1\" --batch",
+        "note": "Batch mode accepts default prompts for an unattended run."
+      },
+      {
+        "label": "List databases",
+        "cmd": "sqlmap -u \"{url}?id=1\" --dbs",
+        "note": "Enumerates database names once injection is confirmed."
+      },
+      {
+        "label": "Test data from a saved request",
+        "cmd": "sqlmap -r request.txt --batch",
+        "note": "Reads a full HTTP request captured from a proxy."
+      }
+    ]
+  },
+  {
+    "slug": "sqlninja",
+    "name": "Sqlninja",
+    "category": "Exploitation",
+    "short": "Demonstrates the impact of a confirmed SQL injection.",
+    "long": "Sqlninja focuses on showing what a confirmed SQL injection against certain database back ends can lead to, used to prove impact during an authorized test. It picks up where detection tools leave off.",
+    "apt": "sqlninja",
+    "tags": [
+      "sql-injection",
+      "database",
+      "exploit",
+      "web"
+    ],
+    "commands": [
+      {
+        "label": "Run with a config",
+        "cmd": "sqlninja -f sqlninja.conf -m test",
+        "note": "Test mode checks the configured injection point first."
+      }
+    ]
+  },
+  {
+    "slug": "sslscan",
+    "name": "SSLScan",
+    "category": "Vulnerability Analysis",
+    "short": "Checks a server's TLS configuration and cipher support.",
+    "long": "SSLScan connects to a TLS service and reports the protocols, ciphers, and certificate details it accepts, flagging weak or outdated options. It is a quick way to judge the transport security of a host.",
+    "apt": "sslscan",
+    "tags": [
+      "tls",
+      "ssl",
+      "audit",
+      "network"
+    ],
+    "commands": [
+      {
+        "label": "Scan a host",
+        "cmd": "sslscan {target}",
+        "note": "Lists supported protocols and ciphers for the default TLS port."
+      },
+      {
+        "label": "Scan a specific port",
+        "cmd": "sslscan {target}:{port}",
+        "note": "Point the scan at a non-standard TLS port."
+      }
+    ]
+  },
+  {
+    "slug": "sslstrip",
+    "name": "SSLStrip",
+    "category": "Sniffing & Spoofing",
+    "short": "Demonstrates downgrade risk for unprotected HTTP.",
+    "long": "SSLStrip illustrates how a client that reaches a site over plain HTTP can be kept off HTTPS on a network an attacker controls, making the case for strict transport security. It is a demonstration tool for controlled, authorized settings.",
+    "apt": "sslstrip",
+    "tags": [
+      "network",
+      "http",
+      "downgrade",
+      "lab"
+    ],
+    "commands": [
+      {
+        "label": "Run on a port",
+        "cmd": "sslstrip -l {port}",
+        "note": "Listens on the given port within your test setup."
+      }
+    ]
+  },
+  {
+    "slug": "sslyze",
+    "name": "SSLyze",
+    "category": "Vulnerability Analysis",
+    "short": "Deep analysis of a server's SSL/TLS setup.",
+    "long": "SSLyze performs a detailed inspection of a TLS endpoint, checking for known weaknesses, certificate problems, and configuration issues, and can output machine-readable results. It suits thorough transport-security reviews.",
+    "apt": "sslyze",
+    "tags": [
+      "tls",
+      "ssl",
+      "audit",
+      "certificates"
+    ],
+    "commands": [
+      {
+        "label": "Full TLS scan",
+        "cmd": "sslyze {target}",
+        "note": "Runs the standard battery of TLS checks."
+      },
+      {
+        "label": "JSON output",
+        "cmd": "sslyze --json_out report.json {target}",
+        "note": "Writes structured results for reporting or diffing."
+      }
+    ]
+  },
+  {
+    "slug": "sublist3r",
+    "name": "Sublist3r",
+    "category": "Information Gathering",
+    "short": "Quick subdomain enumeration from search engines and OSINT.",
+    "long": "Sublist3r queries a set of search engines and public services to list a domain's subdomains fast. It is a lightweight first pass that pairs well with a deeper tool like Amass afterwards.",
+    "apt": "sublist3r",
+    "tags": [
+      "dns",
+      "subdomains",
+      "osint",
+      "passive"
+    ],
+    "commands": [
+      {
+        "label": "Enumerate subdomains",
+        "cmd": "sublist3r -d {target}",
+        "note": "Lists subdomains gathered from the default sources."
+      },
+      {
+        "label": "Enable brute force",
+        "cmd": "sublist3r -d {target} -b",
+        "note": "Adds a dictionary brute-force pass on top of OSINT."
+      }
+    ]
+  },
+  {
+    "slug": "tcpdump",
+    "name": "tcpdump",
+    "category": "Sniffing & Spoofing",
+    "short": "Command-line packet capture with expressive filters.",
+    "long": "tcpdump records network traffic from the terminal and applies filter expressions to keep only the packets you care about. It is ideal on servers without a GUI and for quick captures you hand to Wireshark later.",
+    "apt": "tcpdump",
+    "tags": [
+      "packets",
+      "capture",
+      "cli",
+      "filters"
+    ],
+    "commands": [
+      {
+        "label": "Capture on an interface",
+        "cmd": "tcpdump -i {interface}",
+        "note": "Prints packets as they arrive on the adapter."
+      },
+      {
+        "label": "Filter by host and port",
+        "cmd": "tcpdump -i {interface} host {target} and port {port}",
+        "note": "Keeps only traffic to or from that host and port."
+      },
+      {
+        "label": "Write to a file",
+        "cmd": "tcpdump -i {interface} -w capture.pcap",
+        "note": "Saves raw packets for later analysis in Wireshark."
+      }
+    ]
+  },
+  {
+    "slug": "testdisk",
+    "name": "TestDisk",
+    "category": "Forensics",
+    "short": "Recovers lost partitions and repairs boot sectors.",
+    "long": "TestDisk helps restore partitions that have gone missing and fix file-system structures that stop a disk from booting, working on images or devices. It is a recovery mainstay in both forensics and data rescue.",
+    "apt": "testdisk",
+    "tags": [
+      "forensics",
+      "recovery",
+      "partitions",
+      "disk"
+    ],
+    "commands": [
+      {
+        "label": "Start TestDisk",
+        "cmd": "testdisk image.dd",
+        "note": "Opens the guided interface against the image or device."
+      }
+    ]
+  },
+  {
+    "slug": "sleuthkit",
+    "name": "The Sleuth Kit",
+    "category": "Forensics",
+    "short": "Command-line tools for file-system forensics.",
+    "long": "The Sleuth Kit provides utilities to examine disk images at the file-system level, listing files, recovering deleted entries, and building timelines. It underpins many higher-level forensic platforms.",
+    "apt": "sleuthkit",
+    "tags": [
+      "forensics",
+      "disk",
+      "file-system",
+      "timeline"
+    ],
+    "commands": [
+      {
+        "label": "List files in an image",
+        "cmd": "fls -r image.dd",
+        "note": "Recursively lists files, including deleted entries."
+      },
+      {
+        "label": "Extract a file by inode",
+        "cmd": "icat image.dd 12345 > recovered.bin",
+        "note": "Pulls the content at the given inode out of the image."
+      }
+    ]
+  },
+  {
+    "slug": "theharvester",
+    "name": "theHarvester",
+    "category": "Information Gathering",
+    "short": "Collects emails, names, and hosts from public sources.",
+    "long": "theHarvester queries search engines and public data sets to gather email addresses, subdomains, and host names tied to a domain. It builds an early OSINT picture without sending traffic to the target itself.",
+    "apt": "theharvester",
+    "tags": [
+      "osint",
+      "email",
+      "recon",
+      "passive"
+    ],
+    "commands": [
+      {
+        "label": "Search across engines",
+        "cmd": "theHarvester -d {target} -b all",
+        "note": "Queries every configured data source for the domain."
+      },
+      {
+        "label": "Limit to one source",
+        "cmd": "theHarvester -d {target} -b bing -l 200",
+        "note": "Caps results and uses a single engine for a faster run."
+      }
+    ]
+  },
+  {
+    "slug": "volatility3",
+    "name": "Volatility 3",
+    "category": "Forensics",
+    "short": "Analyzes memory images for forensic artifacts.",
+    "long": "Volatility 3 parses a captured RAM image to recover processes, network connections, loaded modules, and other artifacts, which is central to incident response and malware analysis. It works from the memory file, never the live system.",
+    "apt": "volatility3",
+    "tags": [
+      "forensics",
+      "memory",
+      "incident-response",
+      "analysis"
+    ],
+    "commands": [
+      {
+        "label": "List processes",
+        "cmd": "vol -f memory.raw windows.pslist",
+        "note": "Enumerates the processes present in the memory image."
+      },
+      {
+        "label": "Show network connections",
+        "cmd": "vol -f memory.raw windows.netscan",
+        "note": "Recovers network activity captured in memory."
+      }
+    ]
+  },
+  {
+    "slug": "wapiti",
+    "name": "Wapiti",
+    "category": "Vulnerability Analysis",
+    "short": "Black-box web vulnerability scanner.",
+    "long": "Wapiti crawls a web application and injects test payloads to surface common flaws such as injection and file disclosure, working purely from the outside. It produces a report of the weaknesses it can trigger.",
+    "apt": "wapiti",
+    "tags": [
+      "web",
+      "scanner",
+      "vulnerability",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Scan a site",
+        "cmd": "wapiti -u {url}",
+        "note": "Crawls and tests the application from the given URL."
+      },
+      {
+        "label": "Write an HTML report",
+        "cmd": "wapiti -u {url} -f html -o report.html",
+        "note": "Saves findings to a shareable report."
+      }
+    ]
+  },
+  {
+    "slug": "weevely",
+    "name": "Weevely",
+    "category": "Post Exploitation",
+    "short": "Manages a stealthy PHP test agent on a web server.",
+    "long": "Weevely generates and controls a small PHP agent used to demonstrate persistent access on a web server during an authorized test. It is used only where you already have the right to place and manage such an agent.",
+    "apt": "weevely",
+    "tags": [
+      "web",
+      "php",
+      "post-exploitation",
+      "shell"
+    ],
+    "commands": [
+      {
+        "label": "Generate an agent",
+        "cmd": "weevely generate 'password' agent.php",
+        "note": "Creates the PHP agent protected by the given password."
+      },
+      {
+        "label": "Connect to it",
+        "cmd": "weevely {url}/agent.php 'password'",
+        "note": "Opens a session to a deployed agent you control."
+      }
+    ]
+  },
+  {
+    "slug": "wfuzz",
+    "name": "Wfuzz",
+    "category": "Web Apps",
+    "short": "Fuzzes web requests to find hidden inputs and content.",
+    "long": "Wfuzz substitutes payloads into any part of a request and reports how the server responds, which suits discovering parameters, brute-forcing forms, and probing for injection. Response filters trim results down to the interesting cases.",
+    "apt": "wfuzz",
+    "tags": [
+      "web",
+      "fuzzer",
+      "parameters",
+      "brute-force"
+    ],
+    "commands": [
+      {
+        "label": "Directory fuzzing",
+        "cmd": "wfuzz -w {wordlist} --hc 404 {url}/FUZZ",
+        "note": "Hides 404 responses while walking the wordlist."
+      },
+      {
+        "label": "POST parameter fuzzing",
+        "cmd": "wfuzz -w {wordlist} -d \"user=admin&pass=FUZZ\" {url}/login",
+        "note": "Injects each word into a form field."
+      }
+    ]
+  },
+  {
+    "slug": "whatweb",
+    "name": "WhatWeb",
+    "category": "Information Gathering",
+    "short": "Fingerprints the technology stack behind a website.",
+    "long": "WhatWeb inspects a site's responses to name the server, framework, CMS, analytics, and other components in use. Knowing the stack early points the rest of an assessment at the right weaknesses.",
+    "apt": "whatweb",
+    "tags": [
+      "web",
+      "fingerprint",
+      "recon",
+      "cms"
+    ],
+    "commands": [
+      {
+        "label": "Identify a site",
+        "cmd": "whatweb {url}",
+        "note": "Prints the detected technologies for the URL."
+      },
+      {
+        "label": "Aggressive detection",
+        "cmd": "whatweb -a 3 {url}",
+        "note": "Higher aggression level probes more but sends more requests."
+      }
+    ]
+  },
+  {
+    "slug": "wifite",
+    "name": "Wifite",
+    "category": "Wireless",
+    "short": "Automates common wireless auditing steps.",
+    "long": "Wifite wraps the wireless toolset into a guided workflow, scanning for networks and running the appropriate capture steps against the ones you select. It lowers the number of manual commands for authorized wireless assessments.",
+    "apt": "wifite",
+    "tags": [
+      "wireless",
+      "wifi",
+      "automation",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Start Wifite",
+        "cmd": "wifite",
+        "note": "Scans and presents nearby networks to choose from."
+      },
+      {
+        "label": "Target one interface",
+        "cmd": "wifite -i {interface}",
+        "note": "Pins the run to a specific adapter."
+      }
+    ]
+  },
+  {
+    "slug": "wireshark",
+    "name": "Wireshark",
+    "category": "Sniffing & Spoofing",
+    "short": "Graphical analyzer for captured network traffic.",
+    "long": "Wireshark captures packets and presents them with deep protocol decoding, so you can follow conversations, inspect fields, and understand exactly what crossed the wire. It is the reference tool for making sense of network behavior.",
+    "apt": "wireshark",
+    "tags": [
+      "packets",
+      "analysis",
+      "capture",
+      "protocols"
+    ],
+    "commands": [
+      {
+        "label": "Launch Wireshark",
+        "cmd": "wireshark",
+        "note": "Opens the GUI to pick an interface and start capturing."
+      },
+      {
+        "label": "Capture on an interface",
+        "cmd": "wireshark -i {interface} -k",
+        "note": "Starts capturing immediately on the chosen adapter."
+      },
+      {
+        "label": "Open a saved capture",
+        "cmd": "wireshark capture.pcap",
+        "note": "Loads a previously recorded packet file for analysis."
+      }
+    ]
+  },
+  {
+    "slug": "wpscan",
+    "name": "WPScan",
+    "category": "Vulnerability Analysis",
+    "short": "WordPress-focused scanner for plugins, themes, and users.",
+    "long": "WPScan knows WordPress well: it enumerates the version, installed plugins and themes, and user accounts, then flags versions with published vulnerabilities. It is the go-to first look at any WordPress site in scope.",
+    "apt": "wpscan",
+    "tags": [
+      "wordpress",
+      "web",
+      "cms",
+      "scanner"
+    ],
+    "commands": [
+      {
+        "label": "Scan a site",
+        "cmd": "wpscan --url {url}",
+        "note": "Baseline scan of version, plugins, and themes."
+      },
+      {
+        "label": "Enumerate users",
+        "cmd": "wpscan --url {url} --enumerate u",
+        "note": "Lists valid usernames for later testing."
+      },
+      {
+        "label": "Enumerate vulnerable plugins",
+        "cmd": "wpscan --url {url} --enumerate vp",
+        "note": "Focuses on plugins with known issues."
+      }
+    ]
+  },
+  {
+    "slug": "xsser",
+    "name": "XSSer",
+    "category": "Web Apps",
+    "short": "Automated framework for testing cross-site scripting.",
+    "long": "XSSer automates the detection of cross-site scripting flaws by injecting a range of test vectors into a target's inputs and reporting which ones reflect. It speeds up XSS assessment on applications you are permitted to test.",
+    "apt": "xsser",
+    "tags": [
+      "web",
+      "xss",
+      "audit"
+    ],
+    "commands": [
+      {
+        "label": "Test a URL parameter",
+        "cmd": "xsser -u \"{url}\" -g \"?search=\"",
+        "note": "Injects XSS vectors into the given parameter."
+      },
+      {
+        "label": "Launch the GUI",
+        "cmd": "xsser --gtk",
+        "note": "Opens the graphical interface for guided testing."
+      }
     ]
   }
 ]

@@ -120,7 +120,7 @@ create trigger on_auth_user_created
 
 ## The tool database
 
-- `data/tools.seed.json` holds ~38 hand-written tools across all ten categories.
+- `data/tools.seed.json` holds 100 hand-written tools (10 per category) across all ten categories.
 - `scripts/build-tools.sh` runs on a Kali/Debian box, reads `apt-cache` metadata
   from the `kali-tools-*` metapackages, and writes `data/tools.generated.json`.
 - The app merges the two at build time; **seed entries win** on any slug
