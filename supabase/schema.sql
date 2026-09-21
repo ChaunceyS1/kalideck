@@ -54,3 +54,23 @@ create policy "favorites_rw_own"
   on public.favorites for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+-- Phase 3: assistant chat history and per-day usage.
+create table if not exists public.chat_messages (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users on delete cascade,
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.chat_messages enable row level security;
+
+drop policy if exists "chat_messages_rw_own" on public.chat_messages;
+create policy "chat_messages_rw_own"
+  on public.chat_messages for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create index if not exists chat_messages_user_created_idx
+  on public.chat_messages (user_id, created_at);
