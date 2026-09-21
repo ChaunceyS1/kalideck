@@ -1,16 +1,39 @@
-import { Map } from "lucide-react";
-import { ComingSoon } from "@/components/ComingSoon";
+import { AppBar } from "@/components/AppBar";
+import { PageShell } from "@/components/Shell";
+import { WarningLine } from "@/components/SiteFooter";
+import { ROADMAP } from "@/lib/roadmap";
+import { getTool } from "@/lib/tools";
+import { RoadmapView } from "./RoadmapView";
 
 export const metadata = { title: "Road Map" };
 
-export default function Page() {
+export default function RoadmapPage() {
+  // Resolve the slugs each phase references into display names, once, on the
+  // server, so the client view only needs a lookup table.
+  const toolNames: Record<string, string> = {};
+  for (const phase of ROADMAP) {
+    for (const slug of phase.tools) {
+      toolNames[slug] = getTool(slug)?.name ?? slug;
+    }
+  }
+
   return (
-    <ComingSoon
-      title="Road Map"
-      subtitle="Zero-to-hero path in 10 phases"
-      icon={Map}
-      blurb="A structured path from fundamentals to advanced practice across ten phases, with the right tools and drills grouped into each stage."
-      planned={["Ten phases from setup to reporting", "Recommended tools per phase", "Progress tracking across the journey"]}
-    />
+    <PageShell className="flex flex-col gap-6">
+      <AppBar
+        title="Road Map"
+        subtitle="Zero to hero in 10 phases"
+        back={{ href: "/tools", label: "Tools" }}
+      />
+
+      <p className="font-sans text-[14px] leading-relaxed text-muted">
+        A structured path from a clean lab to a finished report. Work the phases
+        in order, tap one to expand it, and check it off as you go. Progress is
+        saved on this device.
+      </p>
+
+      <RoadmapView toolNames={toolNames} />
+
+      <WarningLine />
+    </PageShell>
   );
 }
