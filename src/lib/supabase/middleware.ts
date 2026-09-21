@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "./env";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
+import { AUTH_ENABLED } from "../auth";
 
 const PROTECTED_PREFIXES = [
   "/tools",
@@ -15,7 +16,8 @@ const PROTECTED_PREFIXES = [
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  if (!isSupabaseConfigured) return response;
+  // Solo mode: no session handling, no route guards.
+  if (!AUTH_ENABLED) return response;
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {

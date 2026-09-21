@@ -38,3 +38,19 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- Phase 2: favorites (one row per user per tool).
+create table if not exists public.favorites (
+  user_id uuid not null references auth.users on delete cascade,
+  tool_slug text not null,
+  created_at timestamptz not null default now(),
+  primary key (user_id, tool_slug)
+);
+
+alter table public.favorites enable row level security;
+
+drop policy if exists "favorites_rw_own" on public.favorites;
+create policy "favorites_rw_own"
+  on public.favorites for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
